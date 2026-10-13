@@ -38,10 +38,10 @@ Sistem; akıllı telefonlar ve Wear OS akıllı saatlerin **İvmeölçer (Accele
 | Üye No | Ad Soyad | Rol / Sorumluluk Alanı |
 | :---: | :--- | :--- |
 | **1** | **Ammar KENJ** *(Takım Kaptanı)* | Proje Mimarı, GitHub & Raporlama Sorumlusu, Genel Koordinasyon |
-| **2** | **Ahmed ELRECEP** | Acil Durum, İhbar & Sensör Servisleri (Siren, SOS Flaş, Otomatik Kaza/Düşme Tespiti ve Sayaç) |
+| **2** | **Muhammed ELDERVİŞ** | Acil Durum, İhbar & Sensör Servisleri (Siren, SOS Flaş, Otomatik Kaza/Düşme Tespiti ve Sayaç) |
 | **3** | **Muhammed Hammud ALALAVI** | UI/UX Tasarımcısı & Ön Yüz Geliştirici (Afet Ekranları, Wear OS Arayüzü ve Bağış Paneli) |
 | **4** | **Umran MIHYO** | Yerel Veritabanı & Çevrimdışı Senkronizasyon Uzmanı (Room DB, Queue Management, WorkManager) |
-| **5** | **Muhammed ELDERVİŞ** | Konum Servisleri & Çevrimdışı Harita Sorumlusu (GPS Takibi, Tile Caching ile Toplanma Alanı Rotalama) |
+| **5** | **Ahmed ELRECEP** | Konum Servisleri & Çevrimdışı Harita Sorumlusu (GPS Takibi, Tile Caching ile Toplanma Alanı Rotalama) |
 | **6** | **Mustafa ALJOULAJI** | Arka Yüz (Backend), AFAD Entegrasyonu & Test/Güvenlik QA Sorumlusu (RESTful API, KVKK Testleri) |
 
 ---
