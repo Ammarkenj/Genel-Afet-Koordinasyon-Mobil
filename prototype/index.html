@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr" dir="ltr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YaşamHattı — UI Prototipi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <a class="skip-link" id="skip-link" href="#screen-title"></a>
+  <div class="lab">
+    <!-- Review controls: outside the devices, not part of the app UI -->
+    <aside class="panel" id="panel" data-region="panel"></aside>
+
+    <main class="stage">
+      <section class="device-wrap device-phone" aria-labelledby="phone-label">
+        <h2 class="device-label" id="phone-label"></h2>
+        <div class="phone">
+          <div class="phone-screen" data-region="phone">
+            <div id="phone-view"></div>
+            <div class="toast" id="toast" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="device-wrap device-watch" aria-labelledby="watch-label">
+        <h2 class="device-label" id="watch-label"></h2>
+        <div class="watch-wrap">
+          <div class="watch force-dark">
+            <div class="watch-screen" id="watch-view" data-region="watch"></div>
+          </div>
+        </div>
+        <p class="lab-note" id="lab-note"></p>
+      </section>
+    </main>
+  </div>
+
+  <noscript>Bu prototip JavaScript gerektirir. · هذا النموذج يتطلب JavaScript.</noscript>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

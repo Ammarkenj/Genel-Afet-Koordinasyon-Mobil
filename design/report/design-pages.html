@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>YaşamHattı — UI/UX tasarım sayfaları</title>
+<style>
+@font-face { font-family: "Roboto"; font-weight: 400; src: url("../../app/assets/fonts/Roboto_400Regular.ttf"); }
+@font-face { font-family: "Roboto"; font-weight: 500; src: url("../../app/assets/fonts/Roboto_500Medium.ttf"); }
+@font-face { font-family: "Roboto"; font-weight: 700; src: url("../../app/assets/fonts/Roboto_700Bold.ttf"); }
+@font-face { font-family: "Roboto"; font-weight: 900; src: url("../../app/assets/fonts/Roboto_900Black.ttf"); }
+
+:root {
+  --navy: #0F172A;
+  --navy-2: #1F2A3C;
+  --stage: #1B1F27;          /* same flat colour as the frame PNGs' outer corners */
+  --ink: #0F172A;
+  --muted: #475569;
+  --line: #CBD5E1;
+  --wash: #F1F5F9;
+  --paper: #FFFFFF;
+
+  --red: #AB1A1A;   --red-soft: #FEE2E2;   --red-lt: #F87171;   --red-ink: #1A0303;
+  --green: #166534; --green-soft: #DCFCE7; --green-lt: #4ADE80; --green-ink: #052E16;
+  --blue: #1D4ED8;  --blue-soft: #DBEAFE;  --blue-lt: #93C5FD;  --blue-ink: #0B1F4B;
+  --amber: #B45309; --amber-soft: #FEF3C7; --amber-lt: #FBBF24; --amber-text: #78350F;
+}
+
+@page { size: 794px 1123px; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--paper); }
+body {
+  font-family: "Roboto", "Segoe UI", Arial, sans-serif;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.45;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+svg.i { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.15em; flex: none; }
+
+.page {
+  position: relative;
+  width: 794px;
+  height: 1123px;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  background: var(--paper);
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+
+/* ---------- header band ---------- */
+.band {
+  position: relative;
+  background: linear-gradient(135deg, #0B1220 0%, #16223B 60%, #1E2F52 100%);
+  color: #fff;
+  padding: 26px 44px 0;
+  overflow: hidden;
+}
+.band::after {
+  content: "";
+  position: absolute; right: -70px; top: -60px;
+  width: 330px; height: 330px; border-radius: 50%;
+  border: 38px solid #243554;
+}
+.band::before {
+  content: "";
+  position: absolute; right: 70px; top: 70px;
+  width: 150px; height: 150px; border-radius: 50%;
+  border: 20px solid #323451;
+}
+.brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; }
+.brand .logo {
+  width: 34px; height: 34px; border-radius: 10px; background: var(--red-lt); color: var(--red-ink);
+  display: grid; place-items: center; font-size: 22px;
+}
+.brand b { font-size: 16px; letter-spacing: .2px; }
+.brand .tag {
+  margin-left: 6px; font-size: 11px; font-weight: 500; color: #CBD5E1;
+  border: 1px solid #55627A; border-radius: 999px; padding: 2px 10px;
+}
+.band h1 { position: relative; z-index: 1; font-size: 34px; line-height: 1.12; font-weight: 900; margin-top: 16px; letter-spacing: -.3px; }
+.band .lead { position: relative; z-index: 1; max-width: 560px; margin-top: 10px; font-size: 15px; line-height: 1.5; color: #CBD5E1; }
+.band .lead b { color: #fff; }
+
+.content { position: relative; padding: 0 44px; }
+.footer {
+  position: absolute; left: 44px; right: 44px; bottom: 22px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10.5px; color: #64748B; border-top: 1px solid var(--line); padding-top: 8px;
+}
+.footer b { color: var(--navy); }
+
+h2.sec {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 17px; font-weight: 900; color: var(--navy); margin: 0 0 12px;
+}
+h2.sec::before { content: ""; width: 5px; height: 20px; border-radius: 3px; background: var(--blue); }
+h2.sec small { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: auto; }
+
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+
+/* ================= PAGE 8 ================= */
+.p8 .band { height: 236px; }
+.rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: -58px; position: relative; z-index: 2; }
+.rule { padding: 14px 15px 13px; box-shadow: 0 3px 0 #D3DBE6; }
+.rule .ic {
+  width: 36px; height: 36px; border-radius: 11px; background: var(--navy); color: #fff;
+  display: grid; place-items: center; font-size: 20px;
+}
+.rule .stat { font-size: 28px; font-weight: 900; line-height: 1; margin-top: 10px; color: var(--navy); }
+.rule .stat small { font-size: 13px; font-weight: 700; color: var(--muted); margin-left: 3px; }
+.rule h3 { font-size: 15px; margin-top: 4px; }
+.rule p { font-size: 11.6px; color: var(--muted); margin-top: 4px; line-height: 1.38; }
+
+.colors { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.color { display: flex; gap: 11px; align-items: stretch; padding: 9px; }
+.color .sw {
+  width: 150px; flex: none; border-radius: 11px; background: #0B1220; padding: 10px 8px 7px;
+  display: flex; flex-direction: column; align-items: center; gap: 7px; justify-content: center;
+}
+.color .sw .btn {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 10px; padding: 8px 12px;
+  font-size: 12.5px; font-weight: 700; white-space: nowrap;
+}
+.color .sw .btn svg { font-size: 16px; }
+.color .sw small { color: #94A3B8; font-size: 9.5px; }
+.color .tx { padding: 2px 2px 0; }
+.color .tx h3 { font-size: 14px; display: flex; align-items: center; gap: 7px; }
+.color .tx h3 i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.color .tx p { font-size: 11.6px; color: var(--muted); margin-top: 3px; line-height: 1.36; }
+.b-red { background: var(--red-lt); color: var(--red-ink); }
+.b-green { background: var(--green-lt); color: var(--green-ink); }
+.b-blue { background: var(--blue-lt); color: var(--blue-ink); }
+.b-amber { background: #3A2A08; color: #FDE68A; border: 1.5px solid var(--amber-lt); }
+
+.note {
+  display: flex; gap: 10px; align-items: center; margin-top: 10px;
+  background: var(--wash); border-radius: 12px; padding: 7px 14px; font-size: 12px; color: var(--muted);
+}
+.note svg { font-size: 18px; color: var(--navy); }
+.note b { color: var(--navy); }
+
+.inter { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; }
+.inter .card { padding: 14px 14px 13px; }
+.flow { display: flex; align-items: flex-start; gap: 6px; margin-top: 2px; }
+.flow .st { text-align: center; }
+.flow .st .scr { width: 108px; height: 206px; border-radius: 14px; background: var(--stage); overflow: hidden; position: relative; }
+.flow .st .scr img { width: 108px; display: block; }
+.flow .st span { display: block; font-size: 11px; font-weight: 700; color: var(--navy); margin-top: 6px; }
+.flow .st span em { font-style: normal; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 10.5px; margin-right: 4px; vertical-align: middle; }
+.flow .st span em svg { font-size: 11px; stroke-width: 3; }
+.flow .ar { align-self: center; color: var(--muted); font-size: 18px; margin-top: -26px; }
+.inter p { font-size: 11.6px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+.inter p b { color: var(--navy); }
+.offline { display: flex; gap: 12px; }
+.offline .scr { width: 108px; height: 206px; flex: none; border-radius: 14px; background: var(--stage); overflow: hidden; position: relative; }
+.offline .scr img { width: 108px; display: block; }
+.quote {
+  background: var(--amber-soft); border: 1.5px solid var(--amber); color: var(--amber-text);
+  border-radius: 12px; padding: 10px 12px; font-size: 12px; font-weight: 700; line-height: 1.38;
+}
+.quote svg { font-size: 16px; vertical-align: -3px; margin-right: 3px; }
+
+/* ================= PAGE 9 ================= */
+.p9 .band, .p10 .band, .p11 .band { height: 164px; }
+.p9 .band .lead, .p10 .band .lead, .p11 .band .lead { font-size: 13.5px; max-width: 600px; }
+.p9 .band h1, .p10 .band h1, .p11 .band h1 { font-size: 28px; margin-top: 12px; }
+.fall { display: grid; grid-template-columns: 330px 1fr; gap: 16px; margin-top: 18px; }
+.stage { position: relative; background: var(--stage); border-radius: 22px; overflow: hidden; }
+.phone-stage { height: 640px; }
+.phone-stage .ph { position: absolute; left: 25px; top: 16px; width: 280px; }
+.phone-stage .ph img { width: 280px; display: block; }
+.pin {
+  position: absolute; width: 26px; height: 26px; border-radius: 50%;
+  background: #FDE68A; color: #3A2A08; font-weight: 900; font-size: 13px;
+  display: grid; place-items: center; box-shadow: 0 0 0 4px #5A5743;
+}
+.right { display: flex; flex-direction: column; gap: 8px; height: 640px; }
+.watch-stage { height: 232px; flex: none; display: flex; align-items: center; justify-content: center; background: var(--stage); }
+.watch-stage .w { position: relative; width: 160px; }
+.watch-stage .w img { width: 160px; display: block; }
+.watch-stage .cap { position: absolute; left: 16px; top: 14px; font-size: 10.5px; font-weight: 700; color: #94A3B8; letter-spacing: .6px; text-transform: uppercase; }
+.call { display: flex; gap: 11px; padding: 8px 12px; align-items: center; flex: 1; }
+.call .n, .n {
+  width: 24px; height: 24px; border-radius: 50%; flex: none;
+  background: var(--navy); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 900;
+}
+.call h3 { font-size: 13.5px; line-height: 1.25; }
+.call p { font-size: 11.8px; color: var(--muted); margin-top: 2px; line-height: 1.38; }
+.call p b { color: var(--navy); }
+.call.safe { border-color: #86EFAC; background: #F6FEF9; }
+.call.safe .n { background: var(--green); }
+
+.proc { margin-top: 14px; padding: 11px 14px 12px; }
+.proc h3 { font-size: 13px; font-weight: 900; color: var(--navy); margin-bottom: 8px; }
+.steps { display: flex; align-items: stretch; gap: 8px; }
+.stp { flex: 1; border-radius: 12px; padding: 9px 10px; background: var(--wash); border: 1px solid var(--line); }
+.stp .h { display: flex; align-items: center; gap: 7px; font-weight: 900; font-size: 12.5px; color: var(--navy); }
+.stp .h .bub { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; background: var(--navy); color: #fff; }
+.stp p { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.33; }
+.stp.ok { background: var(--green-soft); border-color: #86EFAC; } .stp.ok .bub { background: var(--green); }
+.stp.go { background: var(--blue-soft); border-color: #93C5FD; } .stp.go .bub { background: var(--blue); }
+.stp.wait { background: var(--amber-soft); border-color: #FCD34D; } .stp.wait .bub { background: var(--amber); }
+.arrow { align-self: center; color: var(--muted); font-size: 16px; }
+.or { align-self: center; font-size: 10.5px; font-weight: 900; color: var(--muted); }
+
+
+/* ER strip (page 10) */
+.erbox { margin-top: 16px; padding: 11px 14px 13px; }
+.erbox h3 { font-size: 13px; font-weight: 900; color: var(--navy); display: flex; align-items: baseline; gap: 8px; margin-bottom: 9px; }
+.erbox h3 small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.erow { display: flex; align-items: stretch; gap: 0; }
+.erow .tb { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--paper); }
+.erow .tb.w { flex: 1.45; }
+.erow .tb b { display: block; background: #30668F; color: #fff; font-size: 9.6px; padding: 4px 6px; overflow-wrap: anywhere; line-height: 1.2; }
+.erow .tb span { display: block; font-size: 10px; color: var(--muted); padding: 2px 6px; border-top: 1px solid var(--wash); overflow-wrap: anywhere; }
+.erow .rel { width: 30px; flex: none; align-self: center; text-align: center; font-size: 10px; font-weight: 900; color: var(--blue); }
+.erow .rel i { font-style: normal; }
+
+/* ================= PAGES 10 / 11 ================= */
+.intro { margin-top: 14px; display: flex; gap: 12px; align-items: stretch; }
+.intro .entry { flex: 1; display: flex; gap: 10px; align-items: center; padding: 9px 12px; font-size: 12px; color: var(--muted); line-height: 1.38; }
+.intro .entry .bub { width: 32px; height: 32px; border-radius: 10px; flex: none; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-size: 18px; }
+.intro .entry b { color: var(--navy); }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+.col .scr { height: 474px; border-radius: 20px; background: var(--stage); overflow: hidden; position: relative; display: flex; justify-content: center; align-items: flex-start; padding-top: 14px; }
+.col .scr img { width: 208px; display: block; }
+.col .cap { padding: 11px 4px 0; }
+.col .cap h3 { font-size: 14.5px; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+.col .cap p { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.42; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.chip { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--blue-soft); color: #1E3A8A; }
+.chip.er { background: var(--wash); color: var(--muted); font-family: Consolas, "Courier New", monospace; font-weight: 500; border: 1px solid var(--line); }
+.chip.warn { background: var(--amber-soft); color: var(--amber-text); }
+.chip.safe { background: var(--green-soft); color: var(--green); }
+
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 30px; background: var(--navy); border-radius: 16px; color: #fff; overflow: hidden; }
+.stats .s { padding: 13px 10px 12px; text-align: center; border-right: 1px solid #2B3550; }
+.stats .s:last-child { border-right: 0; }
+.stats .v { font-size: 22px; font-weight: 900; line-height: 1.05; }
+.stats .l { font-size: 10.5px; color: #CBD5E1; margin-top: 4px; line-height: 1.3; }
+.todo { margin-top: 10px; font-size: 11px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 8 ============================ -->
+<section class="page p8">
+  <div class="band">
+    <div class="brand"><div class="logo"><svg class="i" data-icon="lifebuoy"></svg></div><b>YaşamHattı</b><span class="tag">UI/UX Tasarımı</span></div>
+    <h1>UI/UX Tasarım Yaklaşımı</h1>
+    <p class="lead">Kullanıcımız afet anında stres altında. Belki yaralı, belki karanlıkta. Bu yüzden tasarımda <b>üç kural</b> esas alındı: büyük butonlar, yüksek kontrast ve sade ekranlar.</p>
+  </div>
+
+  <div class="content">
+    <div class="rules">
+      <div class="card rule">
+        <div class="ic"><svg class="i" data-icon="lifebuoy"></svg></div>
+        <div class="stat">96<small>dp</small></div>
+        <h3>Büyük butonlar</h3>
+        <p>“Yardım İstiyorum” ve sayaç iptali 96 dp; diğer acil durum eylemleri 72 dp; her buton en az 48 dp.</p>
+      </div>
+      <div class="card rule">
+        <div class="ic"><svg class="i" data-icon="sun"></svg></div>
+        <div class="stat">7:1<small>kontrast</small></div>
+        <h3>Yüksek kontrast</h3>
+        <p>Yazıda en az 4,5:1, acil durum butonlarında en az 7:1 (ölçülen 7,13 ile 8,55:1 arası).</p>
+      </div>
+      <div class="card rule">
+        <div class="ic"><svg class="i" data-icon="check"></svg></div>
+        <div class="stat">1<small>ana eylem</small></div>
+        <h3>Sade ekranlar</h3>
+        <p>Her ekranda tek bir ana eylem bulunur; gerisi sade ve geri planda kalır.</p>
+      </div>
+    </div>
+
+    <h2 class="sec" style="margin-top:20px">Renklerin anlamı sabittir <small>Koyu tema, gerçek uygulama renkleri</small></h2>
+    <div class="colors">
+      <div class="card color">
+        <div class="sw"><span class="btn b-red"><svg class="i" data-icon="lifebuoy"></svg>Yardım İstiyorum</span><small>#F87171 · kontrast 7,17:1</small></div>
+        <div class="tx"><h3><i style="background:var(--red)"></i>Kırmızı</h3><p>Yalnızca <b>“Yardım İstiyorum”</b> için kullanılır; tehlike dışındaki durumlar kırmızıyla gösterilmez.</p></div>
+      </div>
+      <div class="card color">
+        <div class="sw"><span class="btn b-green"><svg class="i" data-icon="shieldCheck"></svg>Güvendeyim</span><small>#4ADE80 · kontrast 8,55:1</small></div>
+        <div class="tx"><h3><i style="background:var(--green)"></i>Yeşil</h3><p><b>“Güvendeyim”</b> için; ayrıca başarıyla tamamlanan işlemler (gönderildi, görev kabul edildi, bağış alındı).</p></div>
+      </div>
+      <div class="card color">
+        <div class="sw"><span class="btn b-blue"><svg class="i" data-icon="route"></svg>Rotayı göster</span><small>#93C5FD · kontrast 8,88:1</small></div>
+        <div class="tx"><h3><i style="background:var(--blue)"></i>Mavi</h3><p><b>Normal işlemler</b> için: gezinme, seçim, rota, bağış ve gönüllü işlemleri.</p></div>
+      </div>
+      <div class="card color">
+        <div class="sw"><span class="btn b-amber"><svg class="i" data-icon="clock"></svg>Bekliyor</span><small>#FDE68A · kontrast 11,13:1</small></div>
+        <div class="tx"><h3><i style="background:var(--amber-lt)"></i>Sarı</h3><p><b>Çevrimdışı ve bekleyen</b> durumlar için: “Çevrimdışı”, “Bekliyor”, zayıf bağlantı.</p></div>
+      </div>
+    </div>
+    <div class="note"><svg class="i" data-icon="info"></svg><span><b>Bilgi yalnızca renkle verilmez.</b> Her durumda ikon ve yazı da vardır.</span></div>
+
+    <h2 class="sec" style="margin-top:16px">Etkileşim kararları</h2>
+    <div class="inter">
+      <div class="card">
+        <div class="flow">
+          <div class="st"><div class="scr"><img src="img/07-home.png" alt=""></div><span><em>1</em>Yardım İstiyorum</span></div>
+          <div class="ar"><svg class="i" data-icon="chevron"></svg></div>
+          <div class="st"><div class="scr"><img src="img/10-select-disaster.png" alt=""></div><span><em>2</em>Afet türü</span></div>
+          <div class="ar"><svg class="i" data-icon="chevron"></svg></div>
+          <div class="st"><div class="scr"><img src="img/11-status-sent.png" alt=""></div><span><em><svg class="i" data-icon="check"></svg></em>Gönderildi</span></div>
+        </div>
+        <p><b>Yardım istemek iki dokunuş sürer:</b> önce “Yardım İstiyorum”, sonra afet türü. Bildirim hemen gönderilir; ayrıntılar sonradan eklenir. Giriş yapmadan da çalışır.</p>
+      </div>
+      <div class="card">
+        <div class="offline">
+          <div class="scr"><img src="img/12-status-queued.png" alt=""></div>
+          <div>
+            <div class="quote"><svg class="i" data-icon="clock"></svg>“Bildiriminiz kaydedildi. Bağlantı gelince gönderilecek.”</div>
+            <p style="margin-top:8px"><b>İnternet yoksa uygulama “hata” demez.</b> Bildirim cihazda bekler, ekranda sarı “Bekliyor” durumu görünür.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span><b>YaşamHattı</b> · UI/UX Tasarımı</span><span>8</span></div>
+</section>
+
+<!-- ============================ PAGE 9 ============================ -->
+<section class="page p9">
+  <div class="band">
+    <div class="brand"><div class="logo"><svg class="i" data-icon="lifebuoy"></svg></div><b>YaşamHattı</b><span class="tag">Yeni ekranlar · Ani düşme</span></div>
+    <h1>Ani Düşme ve Kaza Algılama</h1>
+    <p class="lead">Sensör bir sarsıntı, kaza veya ani düşme algılarsa <b>60 saniyelik sayaç</b> açılır. İptal butonu ekrandaki en büyük butondur. Aynı sayaç akıllı saatte de görünür.</p>
+  </div>
+
+  <div class="content">
+    <div class="fall">
+      <div class="stage phone-stage">
+        <div class="ph"><img src="img/18-countdown-fall.png" alt=""></div>
+        <span class="pin" style="left:300px;top:101px">1</span>
+        <span class="pin" style="left:300px;top:249px">2</span>
+        <span class="pin" style="left:300px;top:467px">3</span>
+        <span class="pin" style="left:300px;top:537px">4</span>
+      </div>
+
+      <div class="right">
+        <div class="stage watch-stage">
+          <div class="w"><img src="img/39-watch-countdown-fall.png" alt=""></div>
+          <span class="pin" style="right:30px;top:103px">5</span>
+        </div>
+        <div class="card call"><div class="n">1</div><div><h3>Neden yazıyla belirtilir</h3><p>Algılanan neden başlıkta yazar: <b>“Ani düşme algılandı”</b>. Düşme simgesi hiçbir yerde tek başına kullanılmaz.</p></div></div>
+        <div class="card call"><div class="n">2</div><div><h3>60 saniyelik sayaç</h3><p>Sarsıntı ve kazadaki sayaçla aynı ekran. Yanıt gelmezse <b>konum ve durum otomatik gönderilir</b>.</p></div></div>
+        <div class="card call safe"><div class="n">3</div><div><h3>İptal en büyük buton</h3><p><b>“İyiyim — iptal et”</b> ekrandaki en büyük butondur (96 dp); yeşil, çünkü “güvendeyim” anlamına gelir.</p></div></div>
+        <div class="card call"><div class="n">4</div><div><h3>Beklemeden yardım</h3><p><b>“Hemen yardım çağır”</b> süreyi beklemeden bildirimi hemen gönderir.</p></div></div>
+        <div class="card call"><div class="n">5</div><div><h3>Aynı sayaç akıllı saatte (Wear OS)</h3><p>Saatte yalnızca neden, geri sayım ve yeşil <b>“İyiyim”</b> butonu vardır.</p></div></div>
+      </div>
+    </div>
+
+    <div class="card proc">
+      <h3>Sayaç nasıl işler?</h3>
+      <div class="steps">
+        <div class="stp"><div class="h"><span class="bub"><svg class="i" data-icon="sensor"></svg></span>Sensör algılar</div><p>Telefon veya saat; sarsıntı, kaza ya da ani düşme.</p></div>
+        <div class="arrow"><svg class="i" data-icon="chevron"></svg></div>
+        <div class="stp wait"><div class="h"><span class="bub"><svg class="i" data-icon="clock"></svg></span>60 sn sayaç</div><p>Telefonda ve saatte aynı anda açılır.</p></div>
+        <div class="arrow"><svg class="i" data-icon="chevron"></svg></div>
+        <div class="stp ok"><div class="h"><span class="bub"><svg class="i" data-icon="shieldCheck"></svg></span>Yanıt verir</div><p>“İyiyim — iptal et”: sayaç durur, bildirim gitmez.</p></div>
+        <div class="or">veya</div>
+        <div class="stp go"><div class="h"><span class="bub"><svg class="i" data-icon="sync"></svg></span>Yanıt yok</div><p>Süre dolunca “Ani düşme” türüyle otomatik gönderilir; internet yoksa cihazda bekler.</p></div>
+      </div>
+    </div>
+    <div class="note"><svg class="i" data-icon="info"></svg><span><b>Profil › Otomatik algılama</b> anahtarı sarsıntı, kaza ve düşme için sayacı açıp kapatır.</span></div>
+  </div>
+  <div class="footer"><span><b>YaşamHattı</b> · UI/UX Tasarımı</span><span>9</span></div>
+</section>
+
+<!-- ============================ PAGE 10 ============================ -->
+<section class="page p10">
+  <div class="band">
+    <div class="brand"><div class="logo"><svg class="i" data-icon="lifebuoy"></svg></div><b>YaşamHattı</b><span class="tag">Yeni ekranlar · Gönüllülük 1/2</span></div>
+    <h1>Gönüllülük Ekranları</h1>
+    <p class="lead">Afet bölgesindeki ihtiyaçlara destek olmak isteyenler için altı ekranlık bir akış: <b>kaydol › müsait ol › ihtiyacı gör › görevi kabul et</b>.</p>
+  </div>
+
+  <div class="content">
+    <div class="intro">
+      <div class="card entry"><span class="bub"><svg class="i" data-icon="users"></svg></span><span><b>Nasıl açılır?</b> “Gönüllü ol” satırı Ana Sayfa ve Profil’de bulunur; alt gezinme çubuğu beş öğeyle dolu olduğundan yeni sekme eklenmedi.</span></div>
+      <div class="card entry"><span class="bub"><svg class="i" data-icon="info"></svg></span><span><b>Renk kuralı:</b> gönüllü işlemleri mavidir. Aciliyet kırmızıyla değil, <b>nokta ve yazıyla</b> (“Çok acil”) gösterilir.</span></div>
+    </div>
+
+    <div class="cols">
+      <div class="col">
+        <div class="scr"><img src="img/30-vol-join.png" alt=""></div>
+        <div class="cap"><h3><span class="n">1</span>Gönüllü kaydı</h3>
+          <p>Rol seçimi (İlk yardım, Arama kurtarma, Lojistik ve barınma), sertifika kutusu ve konum paylaşımı notu (KVKK).</p>
+          <div class="chips"><span class="chip er">Volunteers.role_type</span><span class="chip er">certification_status</span></div></div>
+      </div>
+      <div class="col">
+        <div class="scr"><img src="img/31-vol-hub.png" alt=""></div>
+        <div class="cap"><h3><span class="n">2</span>Gönüllü paneli</h3>
+          <p>“Müsaitim” anahtarı, rol ve sertifika özeti; yakındaki ihtiyaçlar mesafe ve aciliyetle sıralanır.</p>
+          <div class="chips"><span class="chip er">Volunteers.is_available</span><span class="chip er">Needs.need_type</span><span class="chip er">urgency_level</span></div></div>
+      </div>
+      <div class="col">
+        <div class="scr"><img src="img/32-vol-need.png" alt=""></div>
+        <div class="cap"><h3><span class="n">3</span>İhtiyaç detayı</h3>
+          <p>Olay, aciliyet, uzaklık ve “Görevi kabul et” butonu. Başka bir görev etkinken buton kapalıdır ve nedeni yazılır.</p>
+          <div class="chips"><span class="chip er">DisasterEvents.title</span><span class="chip er">Needs.description</span></div></div>
+      </div>
+    </div>
+
+    <div class="card erbox">
+      <h3>Gönüllü akışının veri modeli <small>ER diyagramındaki tablolar ve ilişkileri</small></h3>
+      <div class="erow">
+        <div class="tb"><b>Volunteers</b><span>role_type</span><span>certification_status</span><span>is_available</span></div>
+        <div class="rel"><i>1</i>–<i>*</i></div>
+        <div class="tb w"><b>VolunteerAssignments</b><span>assigned_at</span></div>
+        <div class="rel"><i>*</i>–<i>1</i></div>
+        <div class="tb"><b>DisasterEvents</b><span>title</span><span>event_type</span></div>
+        <div class="rel"><i>1</i>–<i>*</i></div>
+        <div class="tb"><b>Reports</b><span>status_type</span><span>latitude / longitude</span></div>
+        <div class="rel"><i>1</i>–<i>*</i></div>
+        <div class="tb"><b>Needs</b><span>need_type</span><span>urgency_level</span><span>is_fulfilled</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span><b>YaşamHattı</b> · UI/UX Tasarımı</span><span>10</span></div>
+</section>
+
+<!-- ============================ PAGE 11 ============================ -->
+<section class="page p11">
+  <div class="band">
+    <div class="brand"><div class="logo"><svg class="i" data-icon="lifebuoy"></svg></div><b>YaşamHattı</b><span class="tag">Yeni ekranlar · Gönüllülük 2/2</span></div>
+    <h1>Görev Kabulü ve Çevrimdışı Çalışma</h1>
+    <p class="lead">Görev kabul edilince kriz merkezine gider; tamamlandı işaretlemeden önce onay istenir. İnternet yoksa kabul <b>cihazda “Bekliyor”</b> olarak saklanır.</p>
+  </div>
+
+  <div class="content">
+    <div class="cols" style="margin-top:22px">
+      <div class="col">
+        <div class="scr"><img src="img/33-vol-task.png" alt=""></div>
+        <div class="cap"><h3><span class="n">4</span>Görev kabul edildi</h3>
+          <p>Kabul özeti, “Rotayı göster” ve “Tamamlandı olarak işaretle” butonları.</p>
+          <div class="chips"><span class="chip er">VolunteerAssignments.assigned_at</span></div></div>
+      </div>
+      <div class="col">
+        <div class="scr"><img src="img/34-vol-done-dialog.png" alt=""></div>
+        <div class="cap"><h3><span class="n">5</span>Tamamlama onayı</h3>
+          <p>İşlem geri alınamadığından önce onay çıkar; güvenli seçenek <b>“Hayır, görev sürsün”</b> öndedir.</p>
+          <div class="chips"><span class="chip er">Needs.is_fulfilled</span><span class="chip safe">Güvenli seçenek önde</span></div></div>
+      </div>
+      <div class="col">
+        <div class="scr"><img src="img/35-vol-offline.png" alt=""></div>
+        <div class="cap"><h3><span class="n">6</span>Panel — çevrimdışı</h3>
+          <p>Sarı uyarı şeridi, son eşleşen ihtiyaçlar ve “Bekliyor” durumundaki görev kabulü; bağlantı gelince gönderilir.</p>
+          <div class="chips"><span class="chip warn">Room kuyruğu</span><span class="chip warn">WorkManager</span></div></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="s"><div class="v">42</div><div class="l">ekran<br>36 telefon + 6 saat</div></div>
+      <div class="s"><div class="v">4</div><div class="l">olay türü: deprem,<br>kaza, düşme, yangın</div></div>
+      <div class="s"><div class="v">60 sn</div><div class="l">güvenlik sayacı<br>telefon ve saat</div></div>
+      <div class="s"><div class="v">7:1</div><div class="l">acil durum<br>buton kontrastı</div></div>
+      <div class="s"><div class="v">48–96</div><div class="l">dp dokunma<br>hedefi</div></div>
+      <div class="s"><div class="v">468</div><div class="l">otomatik kontrol<br>geçti</div></div>
+    </div>
+    <p class="todo">Ekranların tam seti (42 ekran) sonraki sayfadaki panoda yer alır. Aile grupları, duyurular ve acil durum rehberi için henüz ekran tasarlanmadı.</p>
+  </div>
+  <div class="footer"><span><b>YaşamHattı</b> · UI/UX Tasarımı</span><span>11</span></div>
+</section>
+
+<script src="../../prototype/js/icons.js"></script>
+<script>
+  document.querySelectorAll('svg[data-icon]').forEach(function (el) {
+    el.setAttribute('viewBox', '0 0 24 24');
+    el.innerHTML = window.ICONS[el.getAttribute('data-icon')] || '';
+  });
+</script>
+</body>
+</html>
