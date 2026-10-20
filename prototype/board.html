@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="tr" dir="ltr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YaşamHattı — UI Tasarımı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <style>
+    /* Design board: every screen state side by side, like a Figma page. Frames are live index.html?frame=... views. */
+    :root { --canvas: #E5E7EB; --canvas-ink: #111827; --canvas-muted: #4B5563; --canvas-line: #9CA3AF; }
+    :root[data-theme="dark"] { --canvas: #1B1F27; --canvas-ink: #F3F4F6; --canvas-muted: #B6BDC9; --canvas-line: #6B7280; }
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    body { margin: 0; inline-size: max-content; min-inline-size: 100%; padding: 56px 64px 72px; background: var(--canvas); color: var(--canvas-ink); font: 400 16px/1.5 var(--font); }
+    h1, h2, p, figure { margin: 0; }
+    .board-head { display: flex; flex-direction: column; gap: 6px; margin-block-end: 48px; }
+    .board-title { font: 900 40px/1.2 var(--font); }
+    .board-sub { font: 500 18px/1.5 var(--font); color: var(--canvas-muted); }
+    .board-links { display: flex; flex-wrap: wrap; gap: 12px; margin-block-start: 12px; }
+    .board-links a {
+      display: inline-flex; align-items: center; min-block-size: 44px; padding: 0 16px; border: 2px solid var(--canvas-line); border-radius: 12px;
+      color: var(--canvas-ink); font-weight: 700; text-decoration: none;
+    }
+    .board-links a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .section { margin-block-end: 72px; }
+    .section:last-child { margin-block-end: 0; }
+    .section-title { font: 700 28px/1.3 var(--font); padding-block-end: 12px; margin-block-end: 24px; border-block-end: 2px solid var(--canvas-line); }
+    .row { display: flex; align-items: flex-start; gap: 56px; }
+    .cell { display: flex; flex-direction: column; gap: 10px; flex: none; }
+    .cell figcaption { font: 500 15px/1.4 var(--font); color: var(--canvas-muted); max-inline-size: 384px; }
+    .cell figcaption strong { color: var(--canvas-ink); font-weight: 700; }
+    .cell iframe { display: block; border: 0; background: transparent; }
+    .exporting .board-links { display: none; }
+    .single .board-head { display: none; }
+    #board-rects { display: none; }
+  </style>
+</head>
+<body>
+  <header class="board-head">
+    <h1 class="board-title" id="board-title"></h1>
+    <p class="board-sub" id="board-sub"></p>
+    <nav class="board-links" id="board-links"></nav>
+  </header>
+  <main id="board"></main>
+  <!-- Frame rectangles for tools/export-design.ps1 -->
+  <pre id="board-rects"></pre>
+  <noscript>Bu sayfa JavaScript gerektirir. · هذه الصفحة تتطلب JavaScript.</noscript>
+  <script src="js/board.js"></script>
+</body>
+</html>
