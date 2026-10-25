@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id           String             @id @default(uuid())
+  national_id       String?
+  full_name         String
+  phone_number      String
+  blood_type        String?
+  created_at        DateTime           @default(now())
+
+  volunteers        Volunteer[]
+  family_owned      FamilyGroup[]      @relation("GroupOwner")
+  family_members    FamilyGroup[]      @relation("GroupMember")
+  medical_profiles  MedicalProfile[]
+  reports           Report[]
+  emergency_contacts EmergencyContact[]
+  donations         Donation[]
+  sensor_logs       SensorTriggerLog[]
+}
+
+model Volunteer {
+  volunteer_id         String                 @id @default(uuid())
+  user_id              String
+  role_type            String
+  certification_status String?
+  current_latitude     Float?
+  current_longitude    Float?
+  is_available         Boolean                @default(true)
+  updated_at           DateTime               @updatedAt
+
+  user                 User                   @relation(fields: [user_id], references: [user_id])
+  assignments          VolunteerAssignment[]
+}
+
+model FamilyGroup {
+  group_id        String   @id @default(uuid())
+  owner_user_id   String
+  member_user_id  String
+  relationship    String?
+  created_at      DateTime @default(now())
+
+  owner           User     @relation("GroupOwner", fields: [owner_user_id], references: [user_id])
+  member          User     @relation("GroupMember", fields: [member_user_id], references: [user_id])
+}
+
+model MedicalProfile {
+  medical_id          String   @id @default(uuid())
+  user_id             String
+  chronic_diseases    String?
+  allergies           String?
+  regular_medications String?
+
+  user                User     @relation(fields: [user_id], references: [user_id])
+}
+
+model DisasterEvent {
+  event_id     String                @id @default(uuid())
+  title        String
+  event_type   String
+  severity     String
+  location     String?
+  started_at   DateTime              @default(now())
+
+  reports      Report[]
+  assignments  VolunteerAssignment[]
+}
+
+model VolunteerAssignment {
+  assignment_id String        @id @default(uuid())
+  volunteer_id  String
+  event_id      String
+  assigned_at   DateTime      @default(now())
+
+  volunteer     Volunteer     @relation(fields: [volunteer_id], references: [volunteer_id])
+  event         DisasterEvent @relation(fields: [event_id], references: [event_id])
+}
+
+model Report {
+  report_id     String         @id @default(uuid())
+  user_id       String
+  event_id      String?
+  status_type   String
+  latitude      Float
+  longitude     Float
+  address_text  String?
+  battery_level Int?
+  is_synced     Int            @default(0)
+  created_at    DateTime       @default(now())
+
+  user          User           @relation(fields: [user_id], references: [user_id])
+  event         DisasterEvent? @relation(fields: [event_id], references: [event_id])
+  needs         Need[]
+}
+
+model Need {
+  need_id       String   @id @default(uuid())
+  report_id     String
+  need_type     String
+  description   String?
+  urgency_level String
+  is_fulfilled  Boolean  @default(false)
+
+  report        Report   @relation(fields: [report_id], references: [report_id])
+}
+
+model EmergencyContact {
+  contact_id    String   @id @default(uuid())
+  user_id       String
+  contact_name  String
+  contact_phone String
+  relationship  String?
+
+  user          User     @relation(fields: [user_id], references: [user_id])
+}
+
+model Donation {
+  donation_id    String   @id @default(uuid())
+  user_id        String
+  amount         Float
+  payment_status String
+  donation_date  DateTime @default(now())
+
+  user           User     @relation(fields: [user_id], references: [user_id])
+}
+
+model SensorTriggerLog {
+  log_id       String   @id @default(uuid())
+  user_id      String
+  latitude     Float
+  longitude    Float
+  triggered_at DateTime @default(now())
+
+  user         User     @relation(fields: [user_id], references: [user_id])
+}
+
+model Shelter {
+  shelter_id String  @id @default(uuid())
+  name       String
+  category   String
+  capacity   Int?
+  latitude   Float
+  longitude  Float
+  features   String?
+}
+
+model EmergencyGuide {
+  guide_id String @id @default(uuid())
+  title    String
+  category String
+  content  String
+}
+
+model Announcement {
+  announcement_id String   @id @default(uuid())
+  title           String
+  content         String
+  target_city     String?
+  created_at      DateTime @default(now())
+}
