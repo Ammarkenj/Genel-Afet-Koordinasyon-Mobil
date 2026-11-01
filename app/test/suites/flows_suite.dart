@@ -28,7 +28,7 @@ void flowsSuite() {
       expect(find.text(tr.statusSentTitle), findsOneWidget);
       expect(app.deps.reports.reports, hasLength(1));
       expect(app.deps.reports.reports.single.type, IncidentType.quake);
-      expect(app.deps.reports.reports.single.state, DeliveryState.sent);
+      expect(app.deps.reports.reports.single.state, ReportDeliveryState.sent);
     });
 
     testApp('the fall type exists and is reported as a fall', (tester) async {
@@ -48,7 +48,7 @@ void flowsSuite() {
         await app.tapText(tr.typeFire);
         expect(find.text(tr.statusQueuedTitle), findsOneWidget);
         expect(find.text(tr.statusQueuedDesc), findsOneWidget);
-        expect(app.deps.reports.reports.single.state, DeliveryState.queued);
+        expect(app.deps.reports.reports.single.state, ReportDeliveryState.queued);
 
         app.deps.connectivity.setStatus(NetworkStatus.online);
         await tester.pumpAndSettle();

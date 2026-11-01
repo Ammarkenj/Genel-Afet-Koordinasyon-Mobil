@@ -250,21 +250,44 @@ class AppLocalizationsTr extends AppLocalizations {
   String get statusSentTitle => 'Bildiriminiz gönderildi';
 
   @override
-  String get statusSentDesc => 'Kriz merkezi konumunuzu ve durumunuzu aldı.';
+  String get statusSentDesc => 'İhbarınız sunucuya ve veritabanına kaydedildi.';
 
   @override
   String get statusQueuedTitle => 'Bildiriminiz kaydedildi';
 
   @override
   String get statusQueuedDesc =>
-      'İnternet yok. Bağlantı gelince otomatik gönderilecek; SMS ile de denenecek.';
+      'Bağlantı yok. Uygulama kapanırsa bu demo ihbarı kaybolur; SMS gönderilmez.';
 
   @override
   String get statusSendingTitle => 'Gönderiliyor…';
 
   @override
   String get statusSendingDesc =>
-      'Bağlantı zayıf. Bildiriminiz cihazda güvende.';
+      'Konumunuz alınıyor ve ihbarınız sunucuya gönderiliyor.';
+
+  @override
+  String get statusFailedTitle => 'Bildirim gönderilemedi';
+
+  @override
+  String get statusFailedDesc =>
+      'Konum veya sunucu bağlantısı başarısız. Bağlantıyı kontrol edip tekrar deneyin.';
+
+  @override
+  String get statusRetry => 'Tekrar dene';
+
+  @override
+  String get statusLocalOnlyTitle => 'Sunucuya gönderilmedi';
+
+  @override
+  String get statusLocalOnlyDesc =>
+      'Güvende bildirimi şu anda sunucuya iletilmiyor.';
+
+  @override
+  String get statusLocationPending => 'Konum bekleniyor';
+
+  @override
+  String get statusLocationUnavailable => 'Konum alınamadı';
 
   @override
   String get statusAuto => 'Yanıt vermediğiniz için otomatik gönderildi.';

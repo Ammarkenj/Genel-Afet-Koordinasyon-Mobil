@@ -27,6 +27,14 @@ extension AppLabels on AppLocalizations {
     DeliveryState.sending => rstateSending,
   };
 
+  String reportDelivery(ReportDeliveryState s) => switch (s) {
+    ReportDeliveryState.sent => rstateSent,
+    ReportDeliveryState.queued => rstateQueued,
+    ReportDeliveryState.sending => rstateSending,
+    ReportDeliveryState.failed => statusFailedTitle,
+    ReportDeliveryState.localOnly => statusLocalOnlyTitle,
+  };
+
   String network(NetworkStatus n) => switch (n) {
     NetworkStatus.online => netOnline,
     NetworkStatus.weak => netWeak,
@@ -116,3 +124,12 @@ Tone networkTone(NetworkStatus n) =>
   DeliveryState.queued => (tone: Tone.warn, icon: AppIconName.clock),
   DeliveryState.sending => (tone: Tone.info, icon: AppIconName.sync),
 };
+
+({Tone tone, AppIconName icon}) reportDeliveryStyle(ReportDeliveryState s) =>
+    switch (s) {
+      ReportDeliveryState.sent => (tone: Tone.ok, icon: AppIconName.checkCircle),
+      ReportDeliveryState.queued => (tone: Tone.warn, icon: AppIconName.clock),
+      ReportDeliveryState.sending => (tone: Tone.info, icon: AppIconName.sync),
+      ReportDeliveryState.failed => (tone: Tone.danger, icon: AppIconName.alert),
+      ReportDeliveryState.localOnly => (tone: Tone.warn, icon: AppIconName.info),
+    };

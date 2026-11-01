@@ -551,7 +551,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusSentDesc.
   ///
   /// In tr, this message translates to:
-  /// **'Kriz merkezi konumunuzu ve durumunuzu aldı.'**
+  /// **'İhbarınız sunucuya ve veritabanına kaydedildi.'**
   String get statusSentDesc;
 
   /// No description provided for @statusQueuedTitle.
@@ -563,7 +563,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusQueuedDesc.
   ///
   /// In tr, this message translates to:
-  /// **'İnternet yok. Bağlantı gelince otomatik gönderilecek; SMS ile de denenecek.'**
+  /// **'Bağlantı yok. Uygulama kapanırsa bu demo ihbarı kaybolur; SMS gönderilmez.'**
   String get statusQueuedDesc;
 
   /// No description provided for @statusSendingTitle.
@@ -575,8 +575,16 @@ abstract class AppLocalizations {
   /// No description provided for @statusSendingDesc.
   ///
   /// In tr, this message translates to:
-  /// **'Bağlantı zayıf. Bildiriminiz cihazda güvende.'**
+  /// **'Konumunuz alınıyor ve ihbarınız sunucuya gönderiliyor.'**
   String get statusSendingDesc;
+
+  String get statusFailedTitle;
+  String get statusFailedDesc;
+  String get statusRetry;
+  String get statusLocalOnlyTitle;
+  String get statusLocalOnlyDesc;
+  String get statusLocationPending;
+  String get statusLocationUnavailable;
 
   /// No description provided for @statusAuto.
   ///

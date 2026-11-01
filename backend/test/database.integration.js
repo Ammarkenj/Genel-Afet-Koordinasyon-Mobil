@@ -8,7 +8,7 @@ const { createApp } = require("../src/app");
 const { PrismaReportRepository } = require("../src/repositories/prismaReportRepository");
 
 test(
-  "PostgreSQL persists and serves reports through the API",
+  "PostgreSQL accepts guest reports and deduplicates retries",
   { skip: process.env.RUN_DATABASE_TESTS !== "1" },
   async (t) => {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL must be set in backend/.env or the environment.");
@@ -64,37 +64,10 @@ test(
     assert.equal(duplicate.data.id, created.data.id);
     assert.equal(duplicate.duplicate, true);
 
-    const filters = new URLSearchParams({
-      status: "new",
-      startDate: payload.occurredAt,
-      endDate: payload.occurredAt,
-      minLat: String(latitude),
-      maxLat: String(latitude),
-      minLon: String(longitude),
-      maxLon: String(longitude),
-      limit: "1",
-    });
-    const listResponse = await fetch(`${baseUrl}/api/v1/reports?${filters}`);
-    const list = await listResponse.json();
-
-    assert.equal(listResponse.status, 200);
-    assert.equal(list.pagination.total, 1);
-    assert.equal(list.data[0].id, created.data.id);
-
-    const updateResponse = await fetch(`${baseUrl}/api/v1/reports/${created.data.id}/status`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "reviewing" }),
-    });
-    const updated = await updateResponse.json();
-
-    assert.equal(updateResponse.status, 200);
-    assert.equal(updated.data.status, "reviewing");
-
     const persisted = await prisma.report.findUnique({
       where: { client_report_id: clientReportId },
     });
-    assert.equal(persisted.status_type, "reviewing");
+    assert.equal(persisted.status_type, "new");
   } finally {
     if (server) {
       await new Promise((resolve, reject) => {

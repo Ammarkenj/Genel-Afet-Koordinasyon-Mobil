@@ -42,6 +42,12 @@ class ReportViewModel extends ChangeNotifier {
     _currentId = null;
   }
 
+  void retry() {
+    final id = _currentId;
+    if (id == null) return;
+    _reports.retry(id);
+  }
+
   void setInjured(bool value) {
     final r = current;
     if (r == null) return;

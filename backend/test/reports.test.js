@@ -65,41 +65,17 @@ test("report submission validates input and is idempotent", async (t) => {
   assert.equal((await invalidResponse.json()).error.code, "INVALID_REQUEST");
 });
 
-test("reports can be filtered, paginated, and moved through allowed statuses", async (t) => {
+test("report listing and status changes remain unavailable until staff authorization exists", async (t) => {
   const baseUrl = await startTestServer(t);
-  const createResponse = await fetch(`${baseUrl}/api/v1/reports`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(reportPayload()),
-  });
-  const created = (await createResponse.json()).data;
-
-  const filterResponse = await fetch(
-    `${baseUrl}/api/v1/reports?status=new&minLat=38&maxLat=39&minLon=39&maxLon=40&limit=1`,
-  );
-  const filtered = await filterResponse.json();
-
-  assert.equal(filterResponse.status, 200);
-  assert.equal(filtered.pagination.total, 1);
-  assert.equal(filtered.data[0].id, created.id);
-
-  const updateResponse = await fetch(`${baseUrl}/api/v1/reports/${created.id}/status`, {
+  const listResponse = await fetch(`${baseUrl}/api/v1/reports`);
+  const updateResponse = await fetch(`${baseUrl}/api/v1/reports/unknown/status`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ status: "reviewing" }),
   });
-  assert.equal(updateResponse.status, 200);
-  assert.equal((await updateResponse.json()).data.status, "reviewing");
 
-  const invalidTransitionResponse = await fetch(
-    `${baseUrl}/api/v1/reports/${created.id}/status`,
-    {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "new" }),
-    },
-  );
-  assert.equal(invalidTransitionResponse.status, 400);
+  assert.equal(listResponse.status, 404);
+  assert.equal(updateResponse.status, 404);
 });
 
 test("unknown routes return a structured 404 response", async (t) => {

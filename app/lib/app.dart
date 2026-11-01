@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'data/repositories/api_reports_repository.dart';
 import 'data/repositories/connectivity_repository.dart';
 import 'data/repositories/reports_repository.dart';
 import 'data/repositories/volunteer_repository.dart';
@@ -35,17 +36,31 @@ import 'ui/features/volunteer/views/volunteer_join_view.dart';
 import 'ui/features/volunteer/views/volunteer_need_view.dart';
 import 'ui/features/volunteer/views/volunteer_task_view.dart';
 
-/// The repositories behind the app. Today they are in-memory fakes with sample data;
-/// the real Room/Drift + API implementations replace them without touching any view.
+/// The repositories behind the app. Tests can use in-memory fakes; production sends guest reports to the API.
 class AppDependencies {
-  AppDependencies({FakeConnectivityRepository? connectivity})
+  AppDependencies({
+    FakeConnectivityRepository? connectivity,
+    ReportsRepository? reports,
+  })
     : connectivity = connectivity ?? FakeConnectivityRepository() {
-    reports = FakeReportsRepository(this.connectivity);
+    this.reports = reports ?? FakeReportsRepository(this.connectivity);
     volunteers = FakeVolunteerRepository(this.connectivity);
   }
 
+  factory AppDependencies.production() => AppDependencies(
+    reports: ApiReportsRepository(
+      apiBaseUrl: Uri.parse(
+        const String.fromEnvironment(
+          'API_BASE_URL',
+          defaultValue: 'http://10.0.2.2:3000',
+        ),
+      ),
+      locationProvider: GeolocatorReportLocationProvider(),
+    ),
+  );
+
   final FakeConnectivityRepository connectivity;
-  late final FakeReportsRepository reports;
+  late final ReportsRepository reports;
   late final FakeVolunteerRepository volunteers;
 }
 
@@ -162,6 +177,9 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
   @override
   void dispose() {
     _router.dispose();
+    _deps.reports.dispose();
+    _deps.connectivity.dispose();
+    _deps.volunteers.dispose();
     super.dispose();
   }
 

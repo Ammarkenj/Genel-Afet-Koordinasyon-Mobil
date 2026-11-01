@@ -238,7 +238,7 @@ class _RecentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final style = deliveryStyle(report.state);
+    final style = reportDeliveryStyle(report.state);
     return ListRowButton(
       leading: AppIcon(
         report.kind == ReportKind.help
@@ -252,7 +252,7 @@ class _RecentRow extends StatelessWidget {
       chip: AppChip(
         tone: style.tone,
         icon: style.icon,
-        label: l.delivery(report.state),
+        label: l.reportDelivery(report.state),
       ),
       onTap: () {
         context.read<ReportViewModel>().open(report.id);
