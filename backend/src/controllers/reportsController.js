@@ -6,9 +6,9 @@ const {
 
 function createReportsController(reportRepository) {
   return {
-    createReport(req, res) {
+    async createReport(req, res) {
       const input = validateCreateReport(req.body);
-      const result = reportRepository.create(input);
+      const result = await reportRepository.create(input);
 
       return res.status(result.created ? 201 : 200).json({
         data: result.report,
@@ -16,9 +16,9 @@ function createReportsController(reportRepository) {
       });
     },
 
-    listReports(req, res) {
+    async listReports(req, res) {
       const filters = validateListFilters(req.query);
-      const result = reportRepository.list(filters);
+      const result = await reportRepository.list(filters);
 
       return res.json({
         data: result.reports,
@@ -30,8 +30,8 @@ function createReportsController(reportRepository) {
       });
     },
 
-    updateReportStatus(req, res) {
-      const report = reportRepository.findById(req.params.id);
+    async updateReportStatus(req, res) {
+      const report = await reportRepository.findById(req.params.id);
 
       if (!report) {
         return res.status(404).json({
@@ -43,7 +43,7 @@ function createReportsController(reportRepository) {
       }
 
       const { status } = validateStatusChange(req.body, report.status);
-      const updatedReport = reportRepository.updateStatus(report.id, status);
+      const updatedReport = await reportRepository.updateStatus(report.id, status);
 
       return res.json({ data: updatedReport });
     },

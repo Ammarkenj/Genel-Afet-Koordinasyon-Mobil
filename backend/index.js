@@ -1,3 +1,6 @@
 const { startServer } = require("./src/server");
 
-startServer();
+startServer().catch((error) => {
+  console.error("Failed to start YaşamHattı backend:", error);
+  process.exitCode = 1;
+});
