@@ -6,8 +6,7 @@ import 'package:intl/intl.dart';
 import '../../domain/models/models.dart';
 import 'connectivity_repository.dart';
 
-/// Reports ("I need help" / "I am safe"). A report made offline is queued on the device and sent when the
-/// network returns, exactly like the prototype's offline queue. In-memory here; Room/Drift + WorkManager later.
+/// Repository interface for reports sent to the backend or simulated in tests.
 abstract class ReportsRepository implements Listenable {
   List<Report> get reports;
   Report? byId(int id);
@@ -18,6 +17,8 @@ abstract class ReportsRepository implements Listenable {
     bool auto = false,
   });
   void remove(int id);
+  void retry(int id);
+  void dispose();
   void update(
     int id, {
     bool? injured,
@@ -27,7 +28,7 @@ abstract class ReportsRepository implements Listenable {
     bool clearTrapped,
   });
 
-  /// Number of queued reports that were sent by the last network change (for the toast).
+    /// Number of queued reports sent by the last network change (for the toast).
   int takeFlushedCount();
 }
 
@@ -59,7 +60,7 @@ class FakeReportsRepository extends ChangeNotifier
 
   @override
   int get queuedCount =>
-      _reports.where((r) => r.state == DeliveryState.queued).length;
+      _reports.where((r) => r.state == ReportDeliveryState.queued).length;
 
   @override
   Report create({
@@ -67,25 +68,27 @@ class FakeReportsRepository extends ChangeNotifier
     IncidentType? type,
     bool auto = false,
   }) {
+    final occurredAt = DateTime.now();
     final report = Report(
       id: ++_seq,
       kind: kind,
       type: type,
       auto: auto,
-      time: DateFormat('HH:mm').format(DateTime.now()),
+      time: DateFormat('HH:mm').format(occurredAt),
       state: switch (_net.status) {
-        NetworkStatus.offline => DeliveryState.queued,
-        NetworkStatus.weak => DeliveryState.sending,
-        NetworkStatus.online => DeliveryState.sent,
+        NetworkStatus.offline => ReportDeliveryState.queued,
+        NetworkStatus.weak => ReportDeliveryState.sending,
+        NetworkStatus.online => ReportDeliveryState.sent,
       },
+      occurredAt: occurredAt.toUtc(),
     );
     _reports.add(report);
-    if (report.state == DeliveryState.sending) {
+    if (report.state == ReportDeliveryState.sending) {
       Timer(sendingDelay, () {
-        if (report.state != DeliveryState.sending) return;
+        if (report.state != ReportDeliveryState.sending) return;
         report.state = _net.status == NetworkStatus.offline
-            ? DeliveryState.queued
-            : DeliveryState.sent;
+            ? ReportDeliveryState.queued
+            : ReportDeliveryState.sent;
         notifyListeners();
       });
     }
@@ -98,6 +101,9 @@ class FakeReportsRepository extends ChangeNotifier
     _reports.removeWhere((r) => r.id == id);
     notifyListeners();
   }
+
+  @override
+  void retry(int id) {}
 
   @override
   void update(
@@ -120,12 +126,14 @@ class FakeReportsRepository extends ChangeNotifier
     final status = _net.status;
     var flushed = 0;
     for (final r in _reports) {
-      if (status != NetworkStatus.offline && r.state == DeliveryState.queued) {
-        r.state = DeliveryState.sent;
+      if (status != NetworkStatus.offline &&
+          r.state == ReportDeliveryState.queued) {
+        r.state = ReportDeliveryState.sent;
         flushed++;
       }
-      if (status == NetworkStatus.offline && r.state == DeliveryState.sending) {
-        r.state = DeliveryState.queued;
+      if (status == NetworkStatus.offline &&
+          r.state == ReportDeliveryState.sending) {
+        r.state = ReportDeliveryState.queued;
       }
     }
     _flushed += flushed;

@@ -245,20 +245,43 @@ class AppLocalizationsAr extends AppLocalizations {
   String get statusSentTitle => 'أُرسل بلاغك';
 
   @override
-  String get statusSentDesc => 'استلم مركز الأزمات موقعك وحالتك.';
+  String get statusSentDesc => 'حُفظ بلاغك في الخادم وقاعدة البيانات.';
 
   @override
   String get statusQueuedTitle => 'حُفظ بلاغك';
 
   @override
   String get statusQueuedDesc =>
-      'لا يوجد إنترنت. سيُرسل تلقائياً عند عودة الاتصال، وسنحاول عبر SMS أيضاً.';
+      'لا يوجد اتصال. سيُفقد هذا البلاغ التجريبي عند إغلاق التطبيق؛ لا تُرسل رسائل SMS.';
 
   @override
   String get statusSendingTitle => 'جارٍ الإرسال…';
 
   @override
-  String get statusSendingDesc => 'الاتصال ضعيف. بلاغك محفوظ في الجهاز.';
+  String get statusSendingDesc => 'جارٍ تحديد موقعك وإرسال البلاغ إلى الخادم.';
+
+  @override
+  String get statusFailedTitle => 'تعذّر إرسال البلاغ';
+
+  @override
+  String get statusFailedDesc =>
+      'تعذّر تحديد الموقع أو الاتصال بالخادم. تحقق من الاتصال وحاول مجدداً.';
+
+  @override
+  String get statusRetry => 'إعادة المحاولة';
+
+  @override
+  String get statusLocalOnlyTitle => 'لم يُرسل إلى الخادم';
+
+  @override
+  String get statusLocalOnlyDesc =>
+      'لا يُرسل إشعار «أنا بخير» إلى الخادم حالياً.';
+
+  @override
+  String get statusLocationPending => 'بانتظار الموقع';
+
+  @override
+  String get statusLocationUnavailable => 'تعذّر تحديد الموقع';
 
   @override
   String get statusAuto => 'أُرسل تلقائياً لأنك لم تستجب.';

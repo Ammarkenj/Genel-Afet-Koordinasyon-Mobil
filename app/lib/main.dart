@@ -25,6 +25,7 @@ void main() {
         (n) => n.name == q['net'],
         orElse: () => NetworkStatus.online,
       ),
+      dependencies: AppDependencies.production(),
     ),
   );
 }

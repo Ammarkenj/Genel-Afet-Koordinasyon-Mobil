@@ -1,4 +1,4 @@
-/// Domain models. Sample data only: there is no backend in this phase.
+/// Domain models used by the app and its backend integration.
 library;
 
 enum NetworkStatus { online, weak, offline }
@@ -10,8 +10,13 @@ enum CountdownCause { quake, crash, fall }
 
 enum ReportKind { help, safe }
 
-/// Delivery of a report or an accepted task. `queued` is the offline case: saved on the device, sent later.
+/// Delivery state for queued volunteer tasks.
 enum DeliveryState { sent, queued, sending }
+
+/// Delivery state for reports sent to the backend or kept local.
+enum ReportDeliveryState { sent, queued, sending, failed, localOnly }
+
+enum ReportDeliveryFailure { location, connection, server }
 
 enum VolunteerRole { aid, rescue, logistics }
 
@@ -24,8 +29,14 @@ class Report {
     required this.kind,
     required this.time,
     required this.state,
+    required this.occurredAt,
     this.type,
     this.auto = false,
+    this.clientReportId,
+    this.serverReportId,
+    this.latitude,
+    this.longitude,
+    this.canUndo = true,
     this.injured,
     this.trapped,
     this.people = 1,
@@ -35,8 +46,15 @@ class Report {
   final ReportKind kind;
   final IncidentType? type;
   final String time;
+  final DateTime occurredAt;
   final bool auto;
-  DeliveryState state;
+  final String? clientReportId;
+  String? serverReportId;
+  double? latitude;
+  double? longitude;
+  bool canUndo;
+  ReportDeliveryState state;
+  ReportDeliveryFailure? deliveryFailure;
 
   /// Optional details, filled in after the report is already sent (null = not answered).
   bool? injured;

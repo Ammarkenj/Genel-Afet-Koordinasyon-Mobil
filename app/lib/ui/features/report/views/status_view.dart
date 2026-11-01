@@ -14,7 +14,7 @@ import '../../../core/widgets/layout.dart';
 import '../../../core/widgets/parts.dart';
 import '../view_models/report_view_model.dart';
 
-/// Report status. Sent, saved on the device (offline) or sending (weak network): never an "error".
+/// Report delivery status and optional follow-up details.
 class StatusView extends StatelessWidget {
   const StatusView({super.key});
 
@@ -36,12 +36,23 @@ class StatusView extends StatelessWidget {
       );
     }
 
-    final style = deliveryStyle(r.state);
+    final style = reportDeliveryStyle(r.state);
     final (title, desc) = switch (r.state) {
-      DeliveryState.sent => (l.statusSentTitle, l.statusSentDesc),
-      DeliveryState.queued => (l.statusQueuedTitle, l.statusQueuedDesc),
-      DeliveryState.sending => (l.statusSendingTitle, l.statusSendingDesc),
+      ReportDeliveryState.sent => (l.statusSentTitle, l.statusSentDesc),
+      ReportDeliveryState.queued => (l.statusQueuedTitle, l.statusQueuedDesc),
+      ReportDeliveryState.sending => (l.statusSendingTitle, l.statusSendingDesc),
+      ReportDeliveryState.failed => (l.statusFailedTitle, l.statusFailedDesc),
+      ReportDeliveryState.localOnly => (
+        l.statusLocalOnlyTitle,
+        l.statusLocalOnlyDesc,
+      ),
     };
+    final coordinates = r.latitude == null || r.longitude == null
+        ? (r.deliveryFailure == ReportDeliveryFailure.location ||
+                  r.state == ReportDeliveryState.localOnly
+              ? l.statusLocationUnavailable
+              : l.statusLocationPending)
+        : '${r.latitude!.toStringAsFixed(5)}, ${r.longitude!.toStringAsFixed(5)}';
     final kindChip = AppChip(
       tone: r.kind == ReportKind.help ? Tone.danger : Tone.ok,
       icon: r.kind == ReportKind.help
@@ -64,13 +75,13 @@ class StatusView extends StatelessWidget {
             (l.statusKind, kindChip),
             if (r.type != null) (l.statusType, KvText(l.incident(r.type!))),
             (l.statusTime, KvText(r.time, ltr: true)),
-            (l.statusLocation, const KvText('38.6748, 39.2225', ltr: true)),
+            (l.statusLocation, KvText(coordinates, ltr: true)),
             (
               l.statusDelivery,
               AppChip(
                 tone: style.tone,
                 icon: style.icon,
-                label: l.delivery(r.state),
+                label: l.reportDelivery(r.state),
               ),
             ),
           ],
@@ -90,11 +101,18 @@ class StatusView extends StatelessWidget {
               variant: AppButtonVariant.outline,
               onPressed: () => context.go('/home'),
             ),
-            AppButton(
-              label: l.statusUndo,
-              variant: AppButtonVariant.ghostDanger,
-              onPressed: () => _confirmUndo(context),
-            ),
+            if (r.state == ReportDeliveryState.failed)
+              AppButton(
+                label: l.statusRetry,
+                icon: AppIconName.sync,
+                onPressed: () => context.read<ReportViewModel>().retry(),
+              ),
+            if (r.canUndo)
+              AppButton(
+                label: l.statusUndo,
+                variant: AppButtonVariant.ghostDanger,
+                onPressed: () => _confirmUndo(context),
+              ),
           ],
         ),
       ],

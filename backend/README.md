@@ -40,23 +40,6 @@ Yeni bir ihbar kabul eder. İstemci, çevrimdışı kuyrukta tekrar gönderimler
 
 İlk kayıt `201` ve `duplicate: false`; yinelenen gönderi `200` ve önceki kayıtla birlikte `duplicate: true` döndürür.
 
-### `GET /api/v1/reports`
-
-İhbarları en yeniden eskiye listeler. `status`, `startDate`, `endDate`, `minLat`, `maxLat`, `minLon`, `maxLon`, `limit` ve `offset` parametreleri desteklenir. Konum filtresi için dört sınırın tamamı verilmelidir. Varsayılan `limit` 20, üst sınır 100'dür.
-
-Örnek: `GET /api/v1/reports?status=new&limit=20&offset=0`
-
-### `PATCH /api/v1/reports/:id/status`
-
-İhbar durumunu geçerli geçişlerle günceller:
-
-- `new` → `reviewing`
-- `reviewing` → `assigned` veya `resolved`
-- `assigned` → `reviewing` veya `resolved`
-- `resolved` son durumdur.
-
-İstek gövdesi: `{ "status": "reviewing" }`
-
 ## Veritabanı
 
 PostgreSQL bağlantısını `backend/.env` içindeki `DATABASE_URL` değişkeniyle yapılandırın. Bu dosya Git tarafından yok sayılır; bağlantı bilgisini depoya eklemeyin.
@@ -83,4 +66,4 @@ npm run test:database
 
 ## Güvenlik sınırları
 
-Listeleme ve durum güncelleme endpoint'lerinde henüz kimlik doğrulama/yetkilendirme yoktur. Bu sürümü yalnızca kontrollü yerel geliştirme/test ortamında kullanın; üretime veya açık ağa çıkarmadan önce personel kimlik doğrulaması ve rol yetkilendirmesi eklenmelidir. AFAD entegrasyonu ve Socket.IO gerçek zamanlı yayın da sonraki aşamalardır.
+Misafirler kimlik doğrulamadan ihbar gönderebilir. Kötüye kullanımı engelleyecek rate limit/abuse kontrolleri henüz eklenmedi; bu nedenle POST endpoint'ini açık internete yayınlamayın. İhbar listeleme ve durum güncelleme endpoint'leri personel kimlik doğrulaması/yetkilendirmesi tasarlanana kadar kapalıdır. AFAD entegrasyonu ve Socket.IO gerçek zamanlı yayın sonraki aşamalardır.
