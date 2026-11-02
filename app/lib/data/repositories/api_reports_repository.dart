@@ -67,16 +67,14 @@ class GeolocatorReportLocationProvider implements ReportLocationProvider {
 class ApiReportsRepository extends ChangeNotifier
     implements ReportsRepository {
   ApiReportsRepository({
-    required Uri apiBaseUrl,
-    required ReportLocationProvider locationProvider,
+    required this.apiBaseUrl,
+    required this.locationProvider,
     http.Client? client,
-  }) : _apiBaseUrl = apiBaseUrl,
-       _locationProvider = locationProvider,
-       _client = client ?? http.Client(),
+  }) : _client = client ?? http.Client(),
        _ownsClient = client == null;
 
-  final Uri _apiBaseUrl;
-  final ReportLocationProvider _locationProvider;
+  final Uri apiBaseUrl;
+  final ReportLocationProvider locationProvider;
   final http.Client _client;
   final bool _ownsClient;
   final List<Report> _reports = [];
@@ -167,7 +165,7 @@ class ApiReportsRepository extends ChangeNotifier
     try {
       final location = report.latitude != null && report.longitude != null
           ? ReportCoordinates(report.latitude!, report.longitude!)
-          : await _locationProvider.currentLocation();
+          : await locationProvider.currentLocation();
       if (_disposed || !_reports.contains(report)) return;
       report.latitude = location.latitude;
       report.longitude = location.longitude;
@@ -176,7 +174,7 @@ class ApiReportsRepository extends ChangeNotifier
 
       final response = await _client
           .post(
-            _apiBaseUrl.resolve('/api/v1/reports'),
+            apiBaseUrl.resolve('/api/v1/reports'),
             headers: const {'content-type': 'application/json'},
             body: jsonEncode({
               'clientReportId': report.clientReportId,

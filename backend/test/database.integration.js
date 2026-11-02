@@ -1,4 +1,8 @@
-require("dotenv").config({ path: require("node:path").resolve(__dirname, "..", ".env") });
+try {
+  require("dotenv").config({ path: require("node:path").resolve(__dirname, "..", ".env") });
+} catch (_) {
+  // Optional dotenv fallback
+}
 
 const assert = require("node:assert/strict");
 const { randomUUID } = require("node:crypto");
