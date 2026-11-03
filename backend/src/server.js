@@ -1,8 +1,10 @@
-require("dotenv").config({ path: require("node:path").resolve(__dirname, "..", ".env") });
+try {
+  require("dotenv").config({ path: require("node:path").resolve(__dirname, "..", ".env") });
+} catch (_) {
+  // Dotenv is optional
+}
 
-const { PrismaClient } = require("@prisma/client");
 const { createApp } = require("./app");
-const { PrismaReportRepository } = require("./repositories/prismaReportRepository");
 
 async function startServer() {
   const port = Number(process.env.PORT || 3000);
@@ -12,24 +14,38 @@ async function startServer() {
     throw new Error("PORT must be an integer between 1 and 65535.");
   }
 
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL must be set in backend/.env or the environment.");
+  let reportRepository;
+  let databaseClient = null;
+
+  if (process.env.DATABASE_URL) {
+    try {
+      const { PrismaClient } = require("@prisma/client");
+      const { PrismaReportRepository } = require("./repositories/prismaReportRepository");
+      const prisma = new PrismaClient();
+      await prisma.$connect();
+      databaseClient = prisma;
+      reportRepository = new PrismaReportRepository(prisma);
+      console.log("Connected to PostgreSQL via Prisma.");
+    } catch (err) {
+      console.warn("Database connection failed, falling back to InMemory mode:", err.message);
+    }
+  } else {
+    console.warn("DATABASE_URL not set in backend/.env. Running with InMemory repositories.");
   }
 
-  const prisma = new PrismaClient();
-  await prisma.$connect();
-
   const server = createApp({
-    reportRepository: new PrismaReportRepository(prisma),
-    databaseClient: prisma,
+    reportRepository,
+    databaseClient,
   }).listen(port, host, () => {
     console.log(`YaşamHattı backend listening on http://${host}:${port}`);
   });
 
   server.on("close", () => {
-    prisma.$disconnect().catch((error) => {
-      console.error("Failed to disconnect from the database:", error.message);
-    });
+    if (databaseClient) {
+      databaseClient.$disconnect().catch((error) => {
+        console.error("Failed to disconnect from the database:", error.message);
+      });
+    }
   });
 
   return server;
