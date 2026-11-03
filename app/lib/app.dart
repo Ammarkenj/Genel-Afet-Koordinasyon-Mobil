@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'data/repositories/alert_repository.dart';
 import 'data/repositories/api_reports_repository.dart';
 import 'data/repositories/connectivity_repository.dart';
 import 'data/repositories/reports_repository.dart';
 import 'data/repositories/volunteer_repository.dart';
+import 'domain/models/alert_model.dart';
 import 'domain/models/models.dart';
 import 'l10n/app_localizations.dart';
 import 'ui/core/app_events.dart';
@@ -14,6 +18,7 @@ import 'ui/core/theme/app_theme.dart';
 import 'ui/core/widgets/bottom_nav.dart';
 import 'ui/features/donate/view_models/donate_view_model.dart';
 import 'ui/features/donate/views/donate_view.dart';
+import 'ui/features/home/views/afad_sheet.dart';
 import 'ui/features/home/views/home_view.dart';
 import 'ui/features/login/view_models/login_view_model.dart';
 import 'ui/features/login/views/login_view.dart';
@@ -41,26 +46,32 @@ class AppDependencies {
   AppDependencies({
     FakeConnectivityRepository? connectivity,
     ReportsRepository? reports,
-  })
-    : connectivity = connectivity ?? FakeConnectivityRepository() {
+    AlertRepository? alerts,
+  })  : connectivity = connectivity ?? FakeConnectivityRepository() {
     this.reports = reports ?? FakeReportsRepository(this.connectivity);
+    this.alerts = alerts ?? FakeAlertRepository();
     volunteers = FakeVolunteerRepository(this.connectivity);
   }
 
-  factory AppDependencies.production() => AppDependencies(
-    reports: ApiReportsRepository(
-      apiBaseUrl: Uri.parse(
-        const String.fromEnvironment(
-          'API_BASE_URL',
-          defaultValue: 'http://10.0.2.2:3000',
-        ),
+  factory AppDependencies.production() {
+    final baseUrl = Uri.parse(
+      const String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: 'http://10.0.2.2:3000',
       ),
-      locationProvider: GeolocatorReportLocationProvider(),
-    ),
-  );
+    );
+    return AppDependencies(
+      reports: ApiReportsRepository(
+        apiBaseUrl: baseUrl,
+        locationProvider: GeolocatorReportLocationProvider(),
+      ),
+      alerts: ApiAlertRepository(apiBaseUrl: baseUrl),
+    );
+  }
 
   final FakeConnectivityRepository connectivity;
   late final ReportsRepository reports;
+  late final AlertRepository alerts;
   late final FakeVolunteerRepository volunteers;
 }
 
@@ -99,11 +110,19 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
   late final AppDependencies _deps = widget.dependencies ?? AppDependencies();
   late final GoRouter _router = _buildRouter();
+  StreamSubscription<EmergencyAlert>? _alertSubscription;
 
   @override
   void initState() {
     super.initState();
     _deps.connectivity.setStatus(widget.initialNetwork);
+    _alertSubscription = _deps.alerts.alertStream.listen((alert) {
+      if (!alert.isCritical || !mounted) return;
+      final ctx = _rootKey.currentContext;
+      if (ctx != null && ctx.mounted) {
+        showAfadSheet(ctx);
+      }
+    });
     if (widget.seed != null) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _applySeed(widget.seed!),
@@ -176,8 +195,10 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
 
   @override
   void dispose() {
+    _alertSubscription?.cancel();
     _router.dispose();
     _deps.reports.dispose();
+    _deps.alerts.dispose();
     _deps.connectivity.dispose();
     _deps.volunteers.dispose();
     super.dispose();
@@ -191,6 +212,7 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
           value: _deps.connectivity,
         ),
         ListenableProvider<ReportsRepository>.value(value: _deps.reports),
+        ListenableProvider<AlertRepository>.value(value: _deps.alerts),
         ListenableProvider<VolunteerRepository>.value(value: _deps.volunteers),
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel(

@@ -1,14 +1,28 @@
 const express = require("express");
 const healthRoutes = require("./routes/healthRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const deviceRoutes = require("./routes/deviceRoutes");
+const alertRoutes = require("./routes/alertRoutes");
+const { InMemoryDeviceRepository } = require("./repositories/inMemoryDeviceRepository");
+const { InMemoryAlertRepository } = require("./repositories/inMemoryAlertRepository");
+const { NotificationService } = require("./services/notificationService");
 
-function createApp({ reportRepository, databaseClient } = {}) {
+function createApp({
+  reportRepository,
+  databaseClient,
+  deviceRepository = new InMemoryDeviceRepository(),
+  alertRepository = new InMemoryAlertRepository(),
+  notificationService,
+} = {}) {
   const app = express();
+  const notifier = notificationService || new NotificationService({ deviceRepository });
 
   app.disable("x-powered-by");
   app.use(express.json({ limit: "32kb" }));
   app.use("/api/v1/health", healthRoutes({ databaseClient }));
   app.use("/api/v1/reports", reportRoutes({ reportRepository }));
+  app.use("/api/v1/devices", deviceRoutes({ deviceRepository }));
+  app.use("/api/v1/alerts", alertRoutes({ alertRepository, notificationService: notifier }));
 
   app.use((req, res) => {
     res.status(404).json({

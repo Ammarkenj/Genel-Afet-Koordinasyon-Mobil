@@ -578,12 +578,46 @@ abstract class AppLocalizations {
   /// **'Konumunuz alınıyor ve ihbarınız sunucuya gönderiliyor.'**
   String get statusSendingDesc;
 
+  /// No description provided for @statusFailedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim gönderilemedi'**
   String get statusFailedTitle;
+
+  /// No description provided for @statusFailedDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum veya sunucu bağlantısı başarısız. Bağlantıyı kontrol edip tekrar deneyin.'**
   String get statusFailedDesc;
+
+  /// No description provided for @statusRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tekrar dene'**
   String get statusRetry;
+
+  /// No description provided for @statusLocalOnlyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sunucuya gönderilmedi'**
   String get statusLocalOnlyTitle;
+
+  /// No description provided for @statusLocalOnlyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güvende bildirimi şu anda sunucuya iletilmiyor.'**
   String get statusLocalOnlyDesc;
+
+  /// No description provided for @statusLocationPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum bekleniyor'**
   String get statusLocationPending;
+
+  /// No description provided for @statusLocationUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum alınamadı'**
   String get statusLocationUnavailable;
 
   /// No description provided for @statusAuto.
