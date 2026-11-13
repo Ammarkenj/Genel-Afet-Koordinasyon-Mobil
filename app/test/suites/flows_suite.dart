@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yasamhatti/data/repositories/assembly_areas_repository.dart';
+import 'package:yasamhatti/data/repositories/firestore_reports_repository.dart'
+    show WriteFailure, classifyFailureCode;
+import 'package:yasamhatti/app.dart';
+import 'package:yasamhatti/data/tools_hardware.dart';
+import 'package:yasamhatti/ui/features/tools/view_models/tools_view_model.dart';
+import 'package:yasamhatti/domain/geo.dart';
 import 'package:yasamhatti/domain/models/models.dart';
+import 'package:yasamhatti/ui/features/map/view_models/map_view_model.dart';
+import 'package:yasamhatti/ui/features/report/view_models/report_view_model.dart';
 import 'package:yasamhatti/l10n/app_localizations_tr.dart';
 import 'package:yasamhatti/ui/features/donate/view_models/donate_view_model.dart';
 import 'package:yasamhatti/ui/features/login/view_models/login_view_model.dart';
@@ -9,6 +18,36 @@ import 'package:yasamhatti/ui/features/report/view_models/countdown_view_model.d
 import 'package:yasamhatti/ui/features/volunteer/view_models/volunteer_view_model.dart';
 
 import '../support/test_app.dart';
+
+/// Areas fixed by the test, standing in for the Firestore repository.
+class _StubAreas extends ChangeNotifier implements AssemblyAreasRepository {
+  _StubAreas(this.areas);
+
+  @override
+  final List<AssemblyArea> areas;
+  @override
+  bool get isSample => false;
+  @override
+  String? get problem => null;
+}
+
+/// Records what the siren and the flash were told to do.
+class _RecordingHardware implements ToolsHardware {
+  final events = <String>[];
+  bool torchWorks = true;
+
+  @override
+  Future<void> startSiren() async => events.add('siren on');
+
+  @override
+  Future<void> stopSiren() async => events.add('siren off');
+
+  @override
+  Future<bool> setTorch(bool on) async {
+    events.add(on ? 'torch on' : 'torch off');
+    return torchWorks;
+  }
+}
 
 /// User flows against the in-memory repositories: what a person does, and what they must see.
 void flowsSuite() {
@@ -29,6 +68,29 @@ void flowsSuite() {
       expect(app.deps.reports.reports, hasLength(1));
       expect(app.deps.reports.reports.single.type, IncidentType.quake);
       expect(app.deps.reports.reports.single.state, DeliveryState.sent);
+    });
+
+    testApp('assembly areas are offered only after an earthquake report', (
+      tester,
+    ) async {
+      final app = await pumpApp(tester);
+      for (final (type, label) in [
+        (IncidentType.crash, tr.typeCrash),
+        (IncidentType.fall, tr.typeFall),
+      ]) {
+        await app.go('/home');
+        await app.tapText(tr.homeHelp);
+        await app.tapText(label);
+        expect(
+          find.text(tr.statusShowArea),
+          findsNothing,
+          reason: type.name,
+        );
+      }
+      await app.go('/home');
+      await app.tapText(tr.homeHelp);
+      await app.tapText(tr.typeQuake);
+      expect(find.text(tr.statusShowArea), findsOneWidget);
     });
 
     testApp('the fall type exists and is reported as a fall', (tester) async {
@@ -382,6 +444,160 @@ void flowsSuite() {
       await tester.pumpAndSettle();
       expect(find.text(tr.volUnavailable), findsOneWidget);
       expect(find.text(tr.needWater), findsNothing);
+    });
+  });
+
+  group('real-data helpers', () {
+    test('a server refusal is not reported as "no internet"', () {
+      for (final code in [
+        'permission-denied',
+        'unauthenticated',
+        'operation-not-allowed',
+      ]) {
+        expect(classifyFailureCode(code), WriteFailure.rejected, reason: code);
+      }
+      for (final code in [
+        'unavailable',
+        'deadline-exceeded',
+        'network-request-failed',
+      ]) {
+        expect(classifyFailureCode(code), WriteFailure.offline, reason: code);
+      }
+    });
+
+    test('distance and walking time', () {
+      expect(distanceMeters(38.0, 39.0, 38.0, 39.0), 0);
+      expect(
+        distanceMeters(38.0, 39.0, 39.0, 39.0),
+        closeTo(111195, 300),
+      ); // one degree of latitude
+      expect(walkMinutes(0), 1);
+      expect(walkMinutes(800), 10);
+    });
+
+    test('areas are sorted nearest first with distance and walking time', () {
+      final areas = areasFrom(
+        const [
+          AssemblySite(number: 2, name: 'Far', lat: 38.6848, lng: 39.2225),
+          AssemblySite(number: 1, name: 'Near', lat: 38.6757, lng: 39.2225),
+        ],
+        38.6748,
+        39.2225,
+      );
+      expect(areas.map((a) => a.number), [1, 2]);
+      expect(areas.first.meters, closeTo(100, 5));
+      expect(areas.first.minutes, 1);
+      expect(areas.last.meters, closeTo(1112, 10));
+      expect(
+        AssemblySite.tryParse({'lat': 'x', 'lng': 1, 'number': 1}),
+        isNull,
+      );
+    });
+  });
+
+  group('real data on screen', () {
+    testApp('a refused report says so instead of "no internet"', (
+      tester,
+    ) async {
+      final app = await pumpApp(tester);
+      app.deps.connectivity.setStatus(NetworkStatus.offline);
+      await tester.pumpAndSettle();
+      final report = app.deps.reports.create(kind: ReportKind.help);
+      report.problem = 'permission-denied';
+      app.read<ReportViewModel>().open(report.id);
+      await app.go('/status');
+      expect(find.text(tr.statusQueuedDesc), findsNothing);
+      expect(find.text(tr.statusProblem('permission-denied')), findsOneWidget);
+    });
+
+    testApp('the status screen shows the position the report carries', (
+      tester,
+    ) async {
+      final app = await pumpApp(tester);
+      final report = app.deps.reports.create(kind: ReportKind.help)
+        ..lat = 38.6
+        ..lng = 39.2
+        ..fromGps = true;
+      app.read<ReportViewModel>().open(report.id);
+      await app.go('/status');
+      expect(find.text('38.60000, 39.20000'), findsOneWidget);
+      expect(find.text('38.6748, 39.2225'), findsNothing);
+    });
+
+    testApp('a fallback position is labelled as an example', (tester) async {
+      final app = await pumpApp(tester);
+      final report = app.deps.reports.create(kind: ReportKind.help)
+        ..lat = 38.6748
+        ..lng = 39.2225;
+      app.read<ReportViewModel>().open(report.id);
+      await app.go('/status');
+      expect(
+        find.text(tr.statusLocationSample('38.67480, 39.22250')),
+        findsOneWidget,
+      );
+    });
+
+    testApp('map: no areas yet shows a written empty state', (tester) async {
+      await pumpApp(
+        tester,
+        dependencies: AppDependencies(areasRepository: _StubAreas(const [])),
+        location: '/map',
+      );
+      expect(find.text(tr.mapEmpty), findsOneWidget);
+      expect(find.text(tr.mapAll), findsNothing);
+    });
+
+    testApp('map: areas from the server show their names and no sample tag', (
+      tester,
+    ) async {
+      final app = await pumpApp(
+        tester,
+        dependencies: AppDependencies(
+          areasRepository: _StubAreas(const [
+            AssemblyArea(number: 4, name: 'Park Alanı', meters: 300, minutes: 4),
+          ]),
+        ),
+        location: '/map',
+      );
+      expect(find.text('Park Alanı'), findsWidgets);
+      expect(find.text(tr.commonSample), findsNothing);
+      expect(find.text(tr.mapEmpty), findsNothing);
+      expect(app.read<MapViewModel>().areas, hasLength(1));
+    });
+  });
+
+  group('siren and flash', () {
+    test('the siren starts and stops the speaker', () {
+      final hw = _RecordingHardware();
+      final vm = ToolsViewModel(hw);
+      vm.toggleSiren();
+      expect(vm.siren, isTrue);
+      vm.toggleSiren();
+      expect(vm.siren, isFalse);
+      expect(hw.events, ['siren on', 'siren off']);
+    });
+
+    test('the flash blinks SOS (3 short, 3 long, 3 short) until it is switched off', () async {
+      final hw = _RecordingHardware();
+      final vm = ToolsViewModel(hw);
+      vm.toggleFlash();
+      await Future<void>.delayed(const Duration(milliseconds: 6200));
+      vm.toggleFlash();
+      await Future<void>.delayed(const Duration(milliseconds: 900));
+      final ons = hw.events.where((e) => e == 'torch on').length;
+      expect(ons, greaterThanOrEqualTo(9));
+      expect(hw.events.last, 'torch off');
+      final before = hw.events.length;
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      expect(hw.events.length, before, reason: 'nothing blinks after it is off');
+    });
+
+    test('a phone with no usable flash leaves the switch off', () async {
+      final hw = _RecordingHardware()..torchWorks = false;
+      final vm = ToolsViewModel(hw);
+      vm.toggleFlash();
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(vm.flash, isFalse);
     });
   });
 

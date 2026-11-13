@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'data/repositories/assembly_areas_repository.dart';
+import 'data/tools_hardware.dart';
 import 'data/repositories/connectivity_repository.dart';
 import 'data/repositories/reports_repository.dart';
 import 'data/repositories/volunteer_repository.dart';
@@ -35,17 +37,27 @@ import 'ui/features/volunteer/views/volunteer_join_view.dart';
 import 'ui/features/volunteer/views/volunteer_need_view.dart';
 import 'ui/features/volunteer/views/volunteer_task_view.dart';
 
-/// The repositories behind the app. Today they are in-memory fakes with sample data;
-/// the real Room/Drift + API implementations replace them without touching any view.
+/// The repositories behind the app. By default they are in-memory fakes with sample data; reports can be
+/// backed by Cloud Firestore (see `firebase_bootstrap.dart`) without touching any view.
 class AppDependencies {
-  AppDependencies({FakeConnectivityRepository? connectivity})
-    : connectivity = connectivity ?? FakeConnectivityRepository() {
-    reports = FakeReportsRepository(this.connectivity);
+  AppDependencies({
+    ConnectivityRepository? connectivity,
+    ReportsRepository? reportsRepository,
+    AssemblyAreasRepository? areasRepository,
+    ToolsHardware? hardware,
+  }) : hardware = hardware ?? NoopToolsHardware(),
+       connectivity = connectivity ?? FakeConnectivityRepository() {
+    reports = reportsRepository ?? FakeReportsRepository(this.connectivity);
+    areas = areasRepository ?? FakeAssemblyAreasRepository();
     volunteers = FakeVolunteerRepository(this.connectivity);
   }
 
-  final FakeConnectivityRepository connectivity;
-  late final FakeReportsRepository reports;
+  final ConnectivityRepository connectivity;
+  late final ReportsRepository reports;
+  late final AssemblyAreasRepository areas;
+
+  /// Siren and flashlight (no-op in tests and on the web).
+  final ToolsHardware hardware;
   late final FakeVolunteerRepository volunteers;
 }
 
@@ -186,10 +198,13 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
         ChangeNotifierProvider(
           create: (c) => CountdownViewModel(c.read<ReportsRepository>()),
         ),
-        ChangeNotifierProvider(create: (_) => ToolsViewModel()),
+        ChangeNotifierProvider(create: (_) => ToolsViewModel(_deps.hardware)),
         ChangeNotifierProvider(create: (_) => OnboardingViewModel()),
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
-        ChangeNotifierProvider(create: (_) => MapViewModel()),
+        ListenableProvider<AssemblyAreasRepository>.value(value: _deps.areas),
+        ChangeNotifierProvider(
+          create: (c) => MapViewModel(c.read<AssemblyAreasRepository>()),
+        ),
         ChangeNotifierProvider(create: (_) => DonateViewModel()),
         ChangeNotifierProvider(
           create: (c) => VolunteerViewModel(c.read<VolunteerRepository>()),

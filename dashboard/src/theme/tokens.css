@@ -1,0 +1,172 @@
+/* YaşamHattı design tokens: primitive -> semantic.
+   Source of truth for the Flutter ThemeData / ColorScheme.
+   Contrast pairs are verified by tools/check.js. */
+
+:root {
+  /* ---------- Primitive: palette ---------- */
+  --n-0: #FFFFFF;
+  --n-50: #F1F5F9;
+  --n-100: #E8EDF3;
+  --n-300: #CBD5E1;
+  --n-400: #B4C0D0;
+  --n-500: #94A3B8;
+  --n-600: #64748B;
+  --n-700: #475569;
+  --n-750: #334155;
+  --n-800: #1F2A3C;
+  --n-850: #151E2E;
+  --n-900: #0F172A;
+  --n-950: #0B1220;
+  --n-1000: #000000;
+
+  --red-50: #FEE2E2;
+  --red-200: #FCA5A5;
+  --red-300: #F87171;
+  --red-500: #DC2626;
+  --red-700: #AB1A1A;
+  --red-800: #991B1B;
+  --red-950: #3F1212;
+  --red-ink: #1A0303;
+
+  --green-50: #DCFCE7;
+  --green-200: #86EFAC;
+  --green-300: #4ADE80;
+  --green-700: #166534;
+  --green-800: #14532D;
+  --green-950: #0F2E1C;
+  --green-ink: #052E16;
+
+  --blue-50: #DBEAFE;
+  --blue-200: #BFDBFE;
+  --blue-300: #93C5FD;
+  --blue-700: #1D4ED8;
+  --blue-800: #1E3A8A;
+  --blue-950: #14274A;
+  --blue-ink: #0B1F4B;
+
+  --amber-50: #FEF3C7;
+  --amber-200: #FDE68A;
+  --amber-400: #FBBF24;
+  --amber-700: #B45309;
+  --amber-900: #78350F;
+  --amber-950: #3A2A08;
+
+  /* ---------- Typography (Material 3 scale, Roboto + Noto Sans Arabic) ---------- */
+  --font: "Roboto", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --text-display: 900 88px/1 var(--font);      /* countdown digits */
+  --text-headline: 700 26px/1.25 var(--font);  /* screen titles */
+  --text-title: 700 20px/1.3 var(--font);      /* section and card titles */
+  --text-body-lg: 400 18px/1.5 var(--font);
+  --text-body: 400 16px/1.5 var(--font);
+  --text-label: 500 14px/1.4 var(--font);
+  --text-caption: 500 12px/1.35 var(--font);   /* bottom-nav labels only */
+
+  /* ---------- Spacing (4/8 rhythm) ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+
+  /* ---------- Shape ---------- */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* ---------- Touch targets (dp on Android) ---------- */
+  --tap-min: 48px;        /* any tappable element */
+  --tap-control: 56px;    /* buttons, inputs, choices */
+  --tap-emergency: 72px;  /* primary emergency actions */
+  --tap-critical: 96px;   /* "I need help", countdown cancel */
+
+  /* ---------- Icons ---------- */
+  --icon-sm: 20px;
+  --icon-md: 24px;
+  --icon-lg: 32px;
+  --icon-xl: 48px;
+
+  /* ---------- Motion ---------- */
+  --dur-press: 100ms;
+  --dur-state: 200ms;
+
+  --bezel: #0B0F19;
+}
+
+/* ---------- Semantic: light theme ---------- */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: var(--n-50);
+  --surface: var(--n-0);
+  --surface-2: var(--n-100);
+  --text: var(--n-900);
+  --text-muted: var(--n-700);
+  --border: var(--n-300);
+  --border-strong: var(--n-600);
+
+  /* danger = "I need help" / hazard only */
+  --danger: var(--red-700);
+  --on-danger: var(--n-0);
+  --danger-soft: var(--red-50);
+  --danger-text: var(--red-800);
+  --danger-accent: var(--red-500);
+
+  /* safe = "I'm safe" / delivered */
+  --safe: var(--green-700);
+  --on-safe: var(--n-0);
+  --safe-soft: var(--green-50);
+  --safe-text: var(--green-800);
+
+  /* info = navigation, selection, neutral actions */
+  --info: var(--blue-700);
+  --on-info: var(--n-0);
+  --info-soft: var(--blue-50);
+  --info-text: var(--blue-800);
+
+  /* warn = queued / offline / weak signal */
+  --warn-soft: var(--amber-50);
+  --warn-text: var(--amber-900);
+  --warn-accent: var(--amber-700);
+
+  --focus: var(--blue-700);
+  --scrim: rgba(2, 6, 23, 0.72);
+}
+
+/* ---------- Semantic: dark theme (.force-dark pins a subtree, used by the watch) ---------- */
+:root[data-theme="dark"],
+.force-dark {
+  color-scheme: dark;
+  --bg: var(--n-950);
+  --surface: var(--n-850);
+  --surface-2: var(--n-800);
+  --text: var(--n-50);
+  --text-muted: var(--n-400);
+  --border: var(--n-750);
+  --border-strong: var(--n-500);
+
+  --danger: var(--red-300);
+  --on-danger: var(--red-ink);
+  --danger-soft: var(--red-950);
+  --danger-text: var(--red-200);
+  --danger-accent: var(--red-300);
+
+  --safe: var(--green-300);
+  --on-safe: var(--green-ink);
+  --safe-soft: var(--green-950);
+  --safe-text: var(--green-200);
+
+  --info: var(--blue-300);
+  --on-info: var(--blue-ink);
+  --info-soft: var(--blue-950);
+  --info-text: var(--blue-200);
+
+  --warn-soft: var(--amber-950);
+  --warn-text: var(--amber-200);
+  --warn-accent: var(--amber-400);
+
+  --focus: var(--blue-300);
+  --scrim: rgba(0, 0, 0, 0.78);
+}

@@ -1,0 +1,48 @@
+{
+  "name": "yasamhatti-ops",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-yasamhatti \"vitest run --config vitest.rules.config.ts\"",
+    "emulators": "firebase emulators:start --project demo-yasamhatti --import=.emulator-data --export-on-exit",
+    "seed": "tsx scripts/seed.ts --emulator",
+    "seed:clean": "tsx scripts/unseed.ts",
+    "test:e2e": "npm --prefix functions run build && firebase emulators:exec --only auth,firestore,functions --project demo-yasamhatti \"vitest run --config vitest.e2e.config.ts\"",
+    "test:all": "npm test && npm run test:rules && npm run test:e2e",
+    "local": "node scripts/local.mjs --open"
+  },
+  "dependencies": {
+    "firebase": "^13.1.0",
+    "i18next": "^26.7.1",
+    "leaflet": "^1.9.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-i18next": "^17.1.11",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "@types/leaflet": "^1.9.22",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "firebase-admin": "^14.5.0",
+    "globals": "^17.14.0",
+    "puppeteer-core": "^25.16.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

@@ -815,7 +815,7 @@ abstract class AppLocalizations {
   /// No description provided for @mapAlt.
   ///
   /// In tr, this message translates to:
-  /// **'Harita: konumunuz ve numaralı üç toplanma alanı'**
+  /// **'Harita: konumunuz ve toplanma alanları'**
   String get mapAlt;
 
   /// No description provided for @mapOffline.
@@ -1951,6 +1951,36 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Görev durumu'**
   String get screenVolTask;
+
+  /// No description provided for @statusLocating.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum alınıyor…'**
+  String get statusLocating;
+
+  /// No description provided for @statusLocationSample.
+  ///
+  /// In tr, this message translates to:
+  /// **'{coords} (örnek konum, GPS yok)'**
+  String statusLocationSample(String coords);
+
+  /// No description provided for @statusProblem.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sunucuya ulaşıldı ama bildirim kabul edilmedi ({code}). Otomatik olarak yeniden denenecek.'**
+  String statusProblem(String code);
+
+  /// No description provided for @mapEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz toplanma alanı eklenmedi'**
+  String get mapEmpty;
+
+  /// No description provided for @mapEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Alanları kriz merkezi ekler. Eklendiğinde burada, size olan uzaklıkla birlikte görünür.'**
+  String get mapEmptyDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,7 +28,6 @@ class MapView extends StatelessWidget {
     final offline =
         context.watch<ConnectivityRepository>().status == NetworkStatus.offline;
     final a = vm.area;
-    final walk = l.mapWalk(a.meters, a.minutes);
 
     return ScreenBody(
       children: [
@@ -62,6 +62,7 @@ class MapView extends StatelessWidget {
                   child: CustomPaint(
                     painter: _MapPainter(
                       colors: context.colors,
+                      numbers: [for (final x in vm.areas.take(3)) x.number],
                       selected: vm.selected,
                       route: vm.routeOn,
                     ),
@@ -71,79 +72,93 @@ class MapView extends StatelessWidget {
             ),
           ),
         ),
-        AppCard(
-          child: Column(
+        if (a == null)
+          AppBanner(
+            tone: Tone.warn,
+            icon: AppIconName.pin,
+            title: l.mapEmpty,
+            body: l.mapEmptyDesc,
+          )
+        else ...[
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: Sp.s2,
+              children: [
+                // Wrap: at large text the two tags go on separate lines instead of overflowing.
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  spacing: Sp.s2,
+                  runSpacing: Sp.s1,
+                  children: [
+                    AppTag(vm.selected == 0 ? l.mapNearest : l.mapSelected),
+                    if (vm.isSample) AppTag(l.commonSample),
+                  ],
+                ),
+                Row(
+                  children: [
+                    NumberBadge(a.number),
+                    const SizedBox(width: Sp.s2),
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(_name(l, a), style: context.title),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(l.mapWalk(a.meters, a.minutes), style: context.bodyLg),
+                if (vm.routeOn)
+                  NoteLine(icon: AppIconName.route, text: l.mapRouteOn),
+                AppButton(
+                  label: vm.routeOn ? l.mapStop : l.mapStart,
+                  icon: AppIconName.route,
+                  variant: vm.routeOn
+                      ? AppButtonVariant.outline
+                      : AppButtonVariant.info,
+                  onPressed: vm.toggleRoute,
+                ),
+              ],
+            ),
+          ),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: Sp.s2,
             children: [
-              // Wrap: at large text the two tags go on separate lines instead of overflowing.
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                spacing: Sp.s2,
-                runSpacing: Sp.s1,
-                children: [
-                  AppTag(vm.selected == 0 ? l.mapNearest : l.mapSelected),
-                  AppTag(l.commonSample),
-                ],
-              ),
-              Row(
-                children: [
-                  NumberBadge(a.number),
-                  const SizedBox(width: Sp.s2),
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(l.areaName(a.number), style: context.title),
-                    ),
-                  ),
-                ],
-              ),
-              Text(walk, style: context.bodyLg),
-              if (vm.routeOn)
-                NoteLine(icon: AppIconName.route, text: l.mapRouteOn),
-              AppButton(
-                label: vm.routeOn ? l.mapStop : l.mapStart,
-                icon: AppIconName.route,
-                variant: vm.routeOn
-                    ? AppButtonVariant.outline
-                    : AppButtonVariant.info,
-                onPressed: vm.toggleRoute,
-              ),
+              SectionTitle(l.mapAll),
+              for (var i = 0; i < vm.areas.length; i++)
+                ListRowButton(
+                  leading: NumberBadge(vm.areas[i].number),
+                  title: _name(l, vm.areas[i]),
+                  subtitle: l.mapWalk(vm.areas[i].meters, vm.areas[i].minutes),
+                  selected: i == vm.selected,
+                  onTap: () => vm.select(i),
+                ),
             ],
           ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: Sp.s2,
-          children: [
-            SectionTitle(l.mapAll),
-            for (var i = 0; i < MapViewModel.areas.length; i++)
-              ListRowButton(
-                leading: NumberBadge(MapViewModel.areas[i].number),
-                title: l.areaName(MapViewModel.areas[i].number),
-                subtitle: l.mapWalk(
-                  MapViewModel.areas[i].meters,
-                  MapViewModel.areas[i].minutes,
-                ),
-                selected: i == vm.selected,
-                onTap: () => vm.select(i),
-              ),
-          ],
-        ),
+        ],
       ],
     );
   }
+
+  /// The operators' name for the area, or the translated sample name when it has none.
+  static String _name(AppLocalizations l, AssemblyArea a) =>
+      a.name.isNotEmpty ? a.name : l.areaName(a.number);
 }
 
 /// Draws the 340x260 placeholder map in theme colours: roads, a park, the three areas, "you are here", the route.
 class _MapPainter extends CustomPainter {
   _MapPainter({
     required this.colors,
+    required this.numbers,
     required this.selected,
     required this.route,
   });
 
   final AppColors colors;
+
+  /// Numbers of the (up to three) nearest areas, drawn at the three fixed pins.
+  final List<int> numbers;
   final int selected;
   final bool route;
 
@@ -183,7 +198,7 @@ class _MapPainter extends CustomPainter {
       canvas.drawLine(Offset(x, 0), Offset(x, 260), road);
     }
 
-    if (route) {
+    if (route && selected < numbers.length) {
       final path = Path()
         ..moveTo(_routes[selected].first.dx, _routes[selected].first.dy);
       for (final p in _routes[selected].skip(1)) {
@@ -202,7 +217,7 @@ class _MapPainter extends CustomPainter {
       }
     }
 
-    for (var i = 0; i < _pins.length; i++) {
+    for (var i = 0; i < numbers.length; i++) {
       final isSelected = i == selected;
       final r = isSelected ? 17.0 : 14.0;
       canvas.drawCircle(_pins[i], r, Paint()..color = colors.safe);
@@ -216,7 +231,7 @@ class _MapPainter extends CustomPainter {
       );
       final tp = TextPainter(
         text: TextSpan(
-          text: '${i + 1}',
+          text: '${numbers[i]}',
           style: TextStyle(
             fontFamily: 'Roboto',
             fontSize: 14,
@@ -248,5 +263,8 @@ class _MapPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_MapPainter old) =>
-      old.selected != selected || old.route != route || old.colors != colors;
+      old.selected != selected ||
+      old.route != route ||
+      old.colors != colors ||
+      !listEquals(old.numbers, numbers);
 }

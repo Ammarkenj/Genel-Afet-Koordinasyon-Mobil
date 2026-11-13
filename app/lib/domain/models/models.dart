@@ -29,6 +29,11 @@ class Report {
     this.injured,
     this.trapped,
     this.people = 1,
+    this.lat,
+    this.lng,
+    this.fromGps = false,
+    this.locating = false,
+    this.problem,
   });
 
   final int id;
@@ -42,6 +47,19 @@ class Report {
   bool? injured;
   bool? trapped;
   int people;
+
+  /// Where the report was made. Null until known (and always null for the in-memory sample repository).
+  /// `fromGps` is false when the fixed fallback position was used because there was no GPS fix.
+  double? lat;
+  double? lng;
+  bool fromGps;
+
+  /// True while the real position is still being read (real repository only).
+  bool locating;
+
+  /// Why the server did not accept the report yet (an error code), when it is reachable but refused.
+  /// Null in the normal cases: sent, sending, or really offline.
+  String? problem;
 }
 
 class VolunteerNeed {
@@ -77,9 +95,13 @@ class AssemblyArea {
     required this.number,
     required this.meters,
     required this.minutes,
+    this.name = '',
   });
 
   final int number;
   final int meters;
   final int minutes;
+
+  /// Name given by the operators (empty for the built-in samples, which use the translated "Toplanma alanı N").
+  final String name;
 }

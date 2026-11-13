@@ -37,11 +37,21 @@ class StatusView extends StatelessWidget {
     }
 
     final style = deliveryStyle(r.state);
-    final (title, desc) = switch (r.state) {
+    final (title, baseDesc) = switch (r.state) {
       DeliveryState.sent => (l.statusSentTitle, l.statusSentDesc),
       DeliveryState.queued => (l.statusQueuedTitle, l.statusQueuedDesc),
       DeliveryState.sending => (l.statusSendingTitle, l.statusSendingDesc),
     };
+    // A refusal by the server is not "no internet": say what happened.
+    final problem = r.problem;
+    final desc = problem != null && r.state != DeliveryState.sent
+        ? l.statusProblem(problem)
+        : baseDesc;
+    final lat = r.lat;
+    final lng = r.lng;
+    final coords = lat == null || lng == null
+        ? null
+        : '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}';
     final kindChip = AppChip(
       tone: r.kind == ReportKind.help ? Tone.danger : Tone.ok,
       icon: r.kind == ReportKind.help
@@ -64,7 +74,18 @@ class StatusView extends StatelessWidget {
             (l.statusKind, kindChip),
             if (r.type != null) (l.statusType, KvText(l.incident(r.type!))),
             (l.statusTime, KvText(r.time, ltr: true)),
-            (l.statusLocation, const KvText('38.6748, 39.2225', ltr: true)),
+            (
+              l.statusLocation,
+              coords == null
+                  // In-memory sample reports carry no position: keep the prototype's fixed example.
+                  ? (r.locating
+                        ? KvText(l.statusLocating)
+                        : const KvText('38.6748, 39.2225', ltr: true))
+                  : KvText(
+                      r.fromGps ? coords : l.statusLocationSample(coords),
+                      ltr: r.fromGps,
+                    ),
+            ),
             (
               l.statusDelivery,
               AppChip(
@@ -80,11 +101,13 @@ class StatusView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: Sp.s3,
           children: [
-            AppButton(
-              label: l.statusShowArea,
-              icon: AppIconName.pin,
-              onPressed: () => context.go('/map'),
-            ),
+            // Assembly areas are for disasters (earthquake). A crash or a fall only alerts the ambulance centre.
+            if (r.type == IncidentType.quake)
+              AppButton(
+                label: l.statusShowArea,
+                icon: AppIconName.pin,
+                onPressed: () => context.go('/map'),
+              ),
             AppButton(
               label: l.statusHome,
               variant: AppButtonVariant.outline,

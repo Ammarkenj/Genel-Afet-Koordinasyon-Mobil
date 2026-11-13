@@ -11,7 +11,7 @@ import '../../../core/widgets/layout.dart';
 import '../../../core/widgets/parts.dart';
 import '../view_models/tools_view_model.dart';
 
-/// Siren, SOS flash, 112 and the SMS fallback note. Audio, flash, calls and SMS are simulated in this phase.
+/// Siren, SOS flash, 112 and the SMS fallback note. The siren and the flash are real (phone speaker and camera flash); calls and SMS are still simulated.
 class ToolsView extends StatelessWidget {
   const ToolsView({super.key});
 

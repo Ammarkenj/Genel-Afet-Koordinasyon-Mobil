@@ -1,0 +1,7 @@
+{
+  "indexes": [
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "centerId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" }] },
+    { "collectionGroup": "assignments", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "reportId", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": []
+}

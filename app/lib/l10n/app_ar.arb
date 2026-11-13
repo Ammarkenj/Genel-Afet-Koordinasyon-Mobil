@@ -119,7 +119,7 @@
   "toastProto": "هذا الإجراء غير مفعّل في النموذج.",
   "toastVolJoined": "تم تسجيلك متطوعاً.",
   "mapTitle": "نقاط التجمّع",
-  "mapAlt": "خريطة: موقعك وثلاث نقاط تجمّع مرقّمة",
+  "mapAlt": "خريطة: موقعك ونقاط التجمّع",
   "mapOffline": "خريطة بلا إنترنت — منطقة محفوظة",
   "mapOnline": "الخريطة محدَّثة",
   "mapNearest": "الأقرب",
@@ -308,5 +308,24 @@
   "screenVolJoin": "تسجيل متطوع",
   "screenVolHub": "لوحة المتطوّع",
   "screenVolNeed": "تفاصيل الاحتياج",
-  "screenVolTask": "حالة المهمة"
+  "screenVolTask": "حالة المهمة",
+  "statusLocating": "جارٍ تحديد الموقع…",
+  "statusLocationSample": "{coords} (موقع تجريبي، لا يوجد GPS)",
+  "@statusLocationSample": {
+    "placeholders": {
+      "coords": {
+        "type": "String"
+      }
+    }
+  },
+  "statusProblem": "وصل التطبيق إلى الخادم لكنه لم يقبل البلاغ ({code}). ستُعاد المحاولة تلقائياً.",
+  "@statusProblem": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "mapEmpty": "لم تُضف نقاط تجمّع بعد",
+  "mapEmptyDesc": "تضيف غرفة العمليات النقاط، وعند إضافتها تظهر هنا مع بُعدها عنك."
 }

@@ -388,7 +388,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get mapTitle => 'Toplanma alanları';
 
   @override
-  String get mapAlt => 'Harita: konumunuz ve numaralı üç toplanma alanı';
+  String get mapAlt => 'Harita: konumunuz ve toplanma alanları';
 
   @override
   String get mapOffline => 'Çevrimdışı harita — kayıtlı bölge';
@@ -980,4 +980,24 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get screenVolTask => 'Görev durumu';
+
+  @override
+  String get statusLocating => 'Konum alınıyor…';
+
+  @override
+  String statusLocationSample(String coords) {
+    return '$coords (örnek konum, GPS yok)';
+  }
+
+  @override
+  String statusProblem(String code) {
+    return 'Sunucuya ulaşıldı ama bildirim kabul edilmedi ($code). Otomatik olarak yeniden denenecek.';
+  }
+
+  @override
+  String get mapEmpty => 'Henüz toplanma alanı eklenmedi';
+
+  @override
+  String get mapEmptyDesc =>
+      'Alanları kriz merkezi ekler. Eklendiğinde burada, size olan uzaklıkla birlikte görünür.';
 }

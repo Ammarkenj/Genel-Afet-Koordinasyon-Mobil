@@ -1,0 +1,265 @@
+rules_version = '2';
+
+// YaşamHattı operations platform.
+// Roles are Auth custom claims set only by the server: role = 'admin' | 'center', plus centerId for a center.
+// Anonymous users (the Flutter app) can only create well-formed reports; everything else is closed to them.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+    function role() { return signedIn() ? request.auth.token.get('role', '') : ''; }
+    function isAdmin() { return role() == 'admin'; }
+    function isCenter() { return role() == 'center' && request.auth.token.get('centerId', '') != ''; }
+    function myCenterId() { return request.auth.token.get('centerId', ''); }
+    function ownsCenter(id) { return isCenter() && myCenterId() == id; }
+
+    function validLat(v) { return v is number && v >= -90 && v <= 90; }
+    function validLng(v) { return v is number && v >= -180 && v <= 180; }
+    function shortStr(v, max) { return v is string && v.size() <= max; }
+    function nonEmptyStr(v, max) { return v is string && v.size() >= 1 && v.size() <= max; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    // ---------- reports ----------
+    function validNewReport() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['no', 'kind', 'type', 'auto', 'state', 'injured', 'trapped', 'people', 'lat', 'lng', 'district', 'createdAt', 'deviceId', 'ops', 'uid'])
+        && d.keys().hasAll(['kind', 'lat', 'lng', 'createdAt'])
+        && (!('uid' in d) || d.uid == request.auth.uid)
+        && d.kind in ['help', 'safe']
+        && (!('type' in d) || d.type == null || d.type in ['quake', 'crash', 'fall', 'fire', 'other'])
+        && (!('ops' in d) || d.ops == 'new')
+        && (!('state' in d) || d.state in ['sent', 'queued', 'sending'])
+        && (!('auto' in d) || d.auto is bool)
+        && (!('injured' in d) || d.injured == null || d.injured is bool)
+        && (!('trapped' in d) || d.trapped == null || d.trapped is bool)
+        && (!('people' in d) || (d.people is int && d.people >= 1 && d.people <= 500))
+        && (!('no' in d) || d.no is int)
+        && (!('district' in d) || shortStr(d.district, 80))
+        && (!('deviceId' in d) || shortStr(d.deviceId, 120))
+        && validLat(d.lat) && validLng(d.lng)
+        && d.createdAt == request.time;
+    }
+
+    // The app user who made a report (its `uid`) may fill in the optional details or take it back, but only while
+    // the operators have not touched it yet (ops == 'new'). The owner never changes ops or any other field.
+    function ownsNewReport() {
+      return signedIn() && !isCenter() && !isAdmin()
+        && resource.data.get('uid', '') == request.auth.uid
+        && resource.data.get('ops', 'new') == 'new';
+    }
+    function validOwnerEdit() {
+      let d = request.resource.data;
+      return changed().hasOnly(['injured', 'trapped', 'people'])
+        && (d.injured == null || d.injured is bool)
+        && (d.trapped == null || d.trapped is bool)
+        && d.people is int && d.people >= 1 && d.people <= 500;
+    }
+
+    match /reports/{id} {
+      allow read: if isAdmin();
+      allow create: if signedIn() && !isCenter() && !isAdmin() && validNewReport();
+      // Operators change only the operational status; the owner only the optional details.
+      allow update: if (isAdmin() && changed().hasOnly(['ops', 'updatedAt']) && request.resource.data.ops in ['new', 'dispatched', 'resolved'])
+                    || (ownsNewReport() && validOwnerEdit());
+      allow delete: if isAdmin() || ownsNewReport();
+    }
+
+    // ---------- needs and assembly areas (readable by app users, written by admins) ----------
+    function validNeed() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['need', 'urgency', 'district', 'lat', 'lng', 'createdAt', 'updatedAt'])
+        && d.need in ['aid', 'water', 'shelter']
+        && d.urgency in [1, 2, 3]
+        && nonEmptyStr(d.district, 80)
+        && validLat(d.lat) && validLng(d.lng);
+    }
+    match /needs/{id} {
+      allow read: if signedIn() && !isCenter();
+      allow create, update: if isAdmin() && validNeed();
+      allow delete: if isAdmin();
+    }
+
+    function validArea() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['number', 'name', 'capacity', 'occupied', 'lat', 'lng', 'createdAt'])
+        && d.number is int && d.number >= 1
+        && nonEmptyStr(d.name, 120)
+        && d.capacity is int && d.capacity >= 1
+        && d.occupied is int && d.occupied >= 0
+        && validLat(d.lat) && validLng(d.lng);
+    }
+    match /assemblyAreas/{id} {
+      allow read: if signedIn() && !isCenter();
+      allow create, update: if isAdmin() && validArea();
+      allow delete: if isAdmin();
+    }
+
+    // ---------- tasks and volunteers (admin only for now; the app joins in a later phase) ----------
+    match /tasks/{id} { allow read, write: if isAdmin(); }
+    match /volunteers/{id} { allow read, write: if isAdmin(); }
+
+    // ---------- service centers ----------
+    // Created, disabled and deleted only by Cloud Functions (they own the Auth account and the claims).
+    function validCenterFields() {
+      let d = request.resource.data;
+      return nonEmptyStr(d.name, 120)
+        && d.type in ['fire', 'rescue', 'sar', 'ems']
+        && d.status in ['ready', 'busy', 'offline']
+        && shortStr(d.phone, 40) && shortStr(d.address, 200)
+        && validLat(d.lat) && validLng(d.lng);
+    }
+    function validStaff() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'role', 'phone', 'note', 'status', 'workDays', 'createdAt', 'updatedAt'])
+        && nonEmptyStr(d.name, 80)
+        // Working days (ISO 1..7): rules cannot look inside a list, so only its size is checked; the app cleans the values.
+        && (!('workDays' in d) || (d.workDays is list && d.workDays.size() >= 1 && d.workDays.size() <= 7))
+        && d.role in ['leader', 'paramedic', 'doctor', 'driver', 'firefighter', 'rescuer', 'dispatcher', 'other']
+        && shortStr(d.phone, 40) && shortStr(d.note, 200)
+        && d.status in ['on_duty', 'off_duty', 'leave'];
+    }
+    function validVehicle() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['code', 'kind', 'seats', 'status', 'createdAt', 'updatedAt'])
+        && nonEmptyStr(d.code, 30)
+        && d.kind in ['ambulance', 'fire_truck', 'rescue_vehicle', 'command', 'support', 'other']
+        && d.seats is int && d.seats >= 1 && d.seats <= 60
+        && d.status in ['ready', 'maintenance'];
+    }
+
+    // A ready crew: a vehicle and its people with their own working days. Lists are bounded by size (rules cannot loop); the app cleans the values.
+    function validTeam() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'vehicleId', 'memberIds', 'leaderId', 'workDays', 'note', 'createdAt', 'updatedAt'])
+        && nonEmptyStr(d.name, 60)
+        && shortStr(d.vehicleId, 64)
+        && d.memberIds is list && d.memberIds.size() <= 30
+        && shortStr(d.leaderId, 64)
+        && d.workDays is list && d.workDays.size() >= 1 && d.workDays.size() <= 7
+        && shortStr(d.note, 200);
+    }
+
+    match /centers/{id} {
+      allow read: if isAdmin() || ownsCenter(id);
+      allow create: if false;
+      allow update: if (isAdmin()
+                        && changed().hasOnly(['name', 'type', 'status', 'phone', 'address', 'lat', 'lng', 'updatedAt'])
+                        && validCenterFields())
+                    || (ownsCenter(id)
+                        && changed().hasOnly(['status', 'updatedAt'])
+                        && request.resource.data.status in ['ready', 'busy', 'offline']
+                        && request.resource.data.updatedAt == request.time);
+      allow delete: if false;
+
+      // Staff, vehicles and ready crews: each center manages its own; admins read. 'stats' on the center is written by Cloud Functions only.
+      match /staff/{staffId} {
+        allow read: if isAdmin() || ownsCenter(id);
+        allow create: if ownsCenter(id) && validStaff()
+                      && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+        allow update: if ownsCenter(id) && validStaff()
+                      && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.updatedAt == request.time;
+        allow delete: if ownsCenter(id);
+      }
+      match /vehicles/{vehicleId} {
+        allow read: if isAdmin() || ownsCenter(id);
+        allow create: if ownsCenter(id) && validVehicle()
+                      && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+        allow update: if ownsCenter(id) && validVehicle()
+                      && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.updatedAt == request.time;
+        allow delete: if ownsCenter(id);
+      }
+
+      match /crews/{crewId} {
+        allow read: if isAdmin() || ownsCenter(id);
+        allow create: if ownsCenter(id) && validTeam()
+                      && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time;
+        allow update: if ownsCenter(id) && validTeam()
+                      && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.updatedAt == request.time;
+        allow delete: if ownsCenter(id);
+      }
+
+      match /devices/{tokenId} {
+        allow read: if isAdmin();
+        allow create, update: if ownsCenter(id)
+                              && request.resource.data.keys().hasOnly(['token', 'lang', 'updatedAt'])
+                              && shortStr(request.resource.data.token, 4096) && request.resource.data.token.size() > 20
+                              && request.resource.data.lang in ['tr', 'ar']
+                              && request.resource.data.updatedAt == request.time;
+        allow delete: if ownsCenter(id) || isAdmin();
+      }
+    }
+
+    // ---------- assignments (a report handed to a center) ----------
+    function validSnapshot(s) {
+      return s is map
+        && s.keys().hasOnly(['no', 'kind', 'type', 'auto', 'injured', 'trapped', 'people', 'district', 'lat', 'lng'])
+        && validLat(s.lat) && validLng(s.lng);
+    }
+    // Rules cannot loop over a list, so the crew is bounded by size (a document is capped at 1 MB anyway).
+    function validCrew(c) {
+      return c is map && c.keys().hasOnly(['vehicles', 'staff', 'teams'])
+        && c.vehicles is list && c.vehicles.size() <= 10
+        && c.staff is list && c.staff.size() <= 40
+        && (!('teams' in c) || (c.teams is list && c.teams.size() <= 10));
+    }
+    function validAssignment() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['reportId', 'centerId', 'status', 'seen', 'snapshot', 'createdAt', 'updatedAt', 'crew', 'acceptedAt', 'enrouteAt', 'arrivedAt', 'doneAt'])
+        && (!('crew' in d) || validCrew(d.crew))
+        && d.reportId is string && d.reportId.size() > 0
+        && d.centerId is string && d.centerId.size() > 0
+        && d.status in ['notified', 'accepted', 'enroute', 'arrived', 'done', 'declined']
+        && d.seen is bool
+        && validSnapshot(d.snapshot);
+    }
+    // notified -> accepted | declined, then accepted -> enroute -> arrived -> done. Nothing goes backwards.
+    function nextOk(from, to) {
+      return (from == 'notified' && (to == 'accepted' || to == 'declined'))
+          || (from == 'accepted' && to == 'enroute')
+          || (from == 'enroute' && to == 'arrived')
+          || (from == 'arrived' && to == 'done');
+    }
+
+    // A center stamps each step with the server time, in the matching transition only.
+    function stepStamps() {
+      let d = request.resource.data;
+      let ch = changed();
+      return (!('acceptedAt' in ch) || (resource.data.status == 'notified' && d.status == 'accepted' && d.acceptedAt == request.time))
+          && (!('enrouteAt' in ch) || (resource.data.status == 'accepted' && d.status == 'enroute' && d.enrouteAt == request.time))
+          && (!('arrivedAt' in ch) || (resource.data.status == 'enroute' && d.status == 'arrived' && d.arrivedAt == request.time))
+          && (!('doneAt' in ch) || (resource.data.status == 'arrived' && d.status == 'done' && d.doneAt == request.time))
+          && (d.status == resource.data.status || d.status == 'declined'
+              || (d.status == 'accepted' && 'acceptedAt' in ch) || (d.status == 'enroute' && 'enrouteAt' in ch)
+              || (d.status == 'arrived' && 'arrivedAt' in ch) || (d.status == 'done' && 'doneAt' in ch));
+    }
+    // The crew can be set or corrected while the job is accepted or on the way, never after arriving, never on a decline.
+    function crewOk() {
+      return !('crew' in changed())
+          || (resource.data.status in ['notified', 'accepted', 'enroute']
+              && request.resource.data.status in ['accepted', 'enroute']
+              && validCrew(request.resource.data.crew));
+    }
+
+    match /assignments/{id} {
+      allow read: if isAdmin() || (isCenter() && resource.data.centerId == myCenterId());
+      // Deterministic id (reportId_centerId): a center can never receive the same report twice.
+      allow create: if isAdmin() && validAssignment()
+                    && request.resource.data.status == 'notified'
+                    && request.resource.data.seen == false
+                    && id == request.resource.data.reportId + '_' + request.resource.data.centerId
+                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.updatedAt == request.time;
+      allow update: if (isAdmin() && validAssignment())
+                    || (isCenter()
+                        && resource.data.centerId == myCenterId()
+                        && changed().hasOnly(['status', 'seen', 'updatedAt', 'crew', 'acceptedAt', 'enrouteAt', 'arrivedAt', 'doneAt'])
+                        && request.resource.data.updatedAt == request.time
+                        && (request.resource.data.status == resource.data.status || nextOk(resource.data.status, request.resource.data.status))
+                        && (request.resource.data.seen == resource.data.seen || request.resource.data.seen == true)
+                        && stepStamps()
+                        && crewOk());
+      allow delete: if isAdmin();
+    }
+  }
+}

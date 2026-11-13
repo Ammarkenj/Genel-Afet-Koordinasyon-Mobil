@@ -1,0 +1,8 @@
+node_modules
+dist
+.emulator-data
+*.log
+.env.local
+.env.production
+functions/lib
+functions/node_modules

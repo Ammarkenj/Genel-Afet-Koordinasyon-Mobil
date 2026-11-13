@@ -40,3 +40,19 @@ On Windows with Smart App Control, `flutter_tester.exe` is blocked. The same sui
 start `chromedriver --port=4444`, then
 `flutter drive --driver=test_driver/integration_test.dart --target=test/drive_flows.dart -d web-server --browser-name=chrome --chrome-binary=<chrome.exe> --headless`
 (`test/drive_layout.dart` for the layout matrix).
+
+## Firebase (reports reach the operations dashboard)
+
+Reports can be stored in Cloud Firestore project `yasamahatti` (collection `reports`), which the dashboard in `../dashboard` reads.
+The app signs in anonymously and uses real GPS (fixed Elazığ fallback if refused).
+
+    flutter build apk --release --dart-define=BACKEND=firebase --dart-define=LAB=false
+
+* Android package: `yasamayatti.com` (must match `android/app/google-services.json`).
+* Needs Authentication > Anonymous enabled and the rules in `../dashboard/firestore.rules` deployed.
+* Without `BACKEND=firebase` the app uses the in-memory fakes (tests and visual review always do).
+* Windows: `android/gradle.properties` sets `kotlin.incremental=false` because the pub cache (C:) and the project (E:) are on different drives.
+
+With `BACKEND=firebase` the app also reads the network state for real (`connectivity_plus`), shows the real GPS position on the status screen, and loads the assembly areas from Firestore (`assemblyAreas`, added by the admin in the dashboard). A report the server refuses (rules, anonymous sign-in disabled) shows the error code instead of "no internet".
+
+Tools tab: the siren (bundled looping wail, `assets/audio/siren.wav`, plays offline) and the SOS flash (camera torch, Morse S-O-S) are real on the phone via `audioplayers` and `torch_light` (`lib/data/tools_hardware.dart`). Tests and the web build use a silent stand-in. 112 calls and SMS are still simulated.

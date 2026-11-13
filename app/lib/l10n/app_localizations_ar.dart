@@ -380,7 +380,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mapTitle => 'نقاط التجمّع';
 
   @override
-  String get mapAlt => 'خريطة: موقعك وثلاث نقاط تجمّع مرقّمة';
+  String get mapAlt => 'خريطة: موقعك ونقاط التجمّع';
 
   @override
   String get mapOffline => 'خريطة بلا إنترنت — منطقة محفوظة';
@@ -965,4 +965,24 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get screenVolTask => 'حالة المهمة';
+
+  @override
+  String get statusLocating => 'جارٍ تحديد الموقع…';
+
+  @override
+  String statusLocationSample(String coords) {
+    return '$coords (موقع تجريبي، لا يوجد GPS)';
+  }
+
+  @override
+  String statusProblem(String code) {
+    return 'وصل التطبيق إلى الخادم لكنه لم يقبل البلاغ ($code). ستُعاد المحاولة تلقائياً.';
+  }
+
+  @override
+  String get mapEmpty => 'لم تُضف نقاط تجمّع بعد';
+
+  @override
+  String get mapEmptyDesc =>
+      'تضيف غرفة العمليات النقاط، وعند إضافتها تظهر هنا مع بُعدها عنك.';
 }

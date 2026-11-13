@@ -143,7 +143,7 @@
   "toastProto": "Bu işlem prototipte gösterilmez.",
   "toastVolJoined": "Gönüllü olarak kaydoldunuz.",
   "mapTitle": "Toplanma alanları",
-  "mapAlt": "Harita: konumunuz ve numaralı üç toplanma alanı",
+  "mapAlt": "Harita: konumunuz ve toplanma alanları",
   "mapOffline": "Çevrimdışı harita — kayıtlı bölge",
   "mapOnline": "Harita güncel",
   "mapNearest": "En yakın",
@@ -349,5 +349,24 @@
   "screenVolJoin": "Gönüllü kaydı",
   "screenVolHub": "Gönüllü paneli",
   "screenVolNeed": "İhtiyaç detayı",
-  "screenVolTask": "Görev durumu"
+  "screenVolTask": "Görev durumu",
+  "statusLocating": "Konum alınıyor…",
+  "statusLocationSample": "{coords} (örnek konum, GPS yok)",
+  "@statusLocationSample": {
+    "placeholders": {
+      "coords": {
+        "type": "String"
+      }
+    }
+  },
+  "statusProblem": "Sunucuya ulaşıldı ama bildirim kabul edilmedi ({code}). Otomatik olarak yeniden denenecek.",
+  "@statusProblem": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "mapEmpty": "Henüz toplanma alanı eklenmedi",
+  "mapEmptyDesc": "Alanları kriz merkezi ekler. Eklendiğinde burada, size olan uzaklıkla birlikte görünür."
 }
