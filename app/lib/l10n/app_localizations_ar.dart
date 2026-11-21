@@ -268,6 +268,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذّر تحديد الموقع أو الاتصال بالخادم. تحقق من الاتصال وحاول مجدداً.';
 
   @override
+  String get reportSaveFailed =>
+      'تعذّر حفظ البلاغ على الجهاز. يُرجى المحاولة مجدداً.';
+
+  @override
   String get statusRetry => 'إعادة المحاولة';
 
   @override

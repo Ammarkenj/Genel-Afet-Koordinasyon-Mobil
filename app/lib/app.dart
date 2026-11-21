@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'data/local/daos/report_dao.dart';
 import 'data/repositories/api_reports_repository.dart';
+import 'data/repositories/catalog_repository.dart';
 import 'data/repositories/connectivity_repository.dart';
 import 'data/repositories/reports_repository.dart';
 import 'data/repositories/volunteer_repository.dart';
@@ -41,26 +43,39 @@ class AppDependencies {
   AppDependencies({
     FakeConnectivityRepository? connectivity,
     ReportsRepository? reports,
-  })
-    : connectivity = connectivity ?? FakeConnectivityRepository() {
+    CatalogRepository? catalogs,
+  }) : connectivity = connectivity ?? FakeConnectivityRepository() {
     this.reports = reports ?? FakeReportsRepository(this.connectivity);
+    this.catalogs = catalogs ?? FakeCatalogRepository();
     volunteers = FakeVolunteerRepository(this.connectivity);
   }
 
-  factory AppDependencies.production() => AppDependencies(
-    reports: ApiReportsRepository(
-      apiBaseUrl: Uri.parse(
-        const String.fromEnvironment(
-          'API_BASE_URL',
-          defaultValue: 'http://10.0.2.2:3000',
-        ),
+  factory AppDependencies.production() {
+    final connectivity = FakeConnectivityRepository();
+    final apiBaseUrl = Uri.parse(
+      const String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: 'http://10.0.2.2:3000',
       ),
-      locationProvider: GeolocatorReportLocationProvider(),
-    ),
-  );
+    );
+    return AppDependencies(
+      connectivity: connectivity,
+      reports: ApiReportsRepository(
+        apiBaseUrl: apiBaseUrl,
+        locationProvider: GeolocatorReportLocationProvider(),
+        connectivity: connectivity,
+        reportDao: ReportDao(),
+      ),
+      catalogs: ApiCatalogRepository(
+        apiBaseUrl: apiBaseUrl,
+        connectivity: connectivity,
+      ),
+    );
+  }
 
   final FakeConnectivityRepository connectivity;
   late final ReportsRepository reports;
+  late final CatalogRepository catalogs;
   late final FakeVolunteerRepository volunteers;
 }
 
@@ -111,17 +126,16 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
     }
   }
 
-  void _applySeed(String seed) {
+  Future<void> _applySeed(String seed) async {
     final context = _rootKey.currentContext;
     if (context == null) return;
     final reports = context.read<ReportViewModel>();
     switch (seed) {
       case 'help':
-        reports
-          ..sendHelp(IncidentType.quake)
-          ..setInjured(true);
+        final report = await reports.sendHelp(IncidentType.quake);
+        if (report != null) await reports.setInjured(true);
       case 'safe':
-        reports.sendSafe();
+        await reports.sendSafe();
       case 'vol':
         context.read<VolunteerViewModel>()
           ..setRole(VolunteerRole.rescue)
@@ -178,6 +192,7 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
   void dispose() {
     _router.dispose();
     _deps.reports.dispose();
+    _deps.catalogs.dispose();
     _deps.connectivity.dispose();
     _deps.volunteers.dispose();
     super.dispose();
@@ -191,6 +206,7 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
           value: _deps.connectivity,
         ),
         ListenableProvider<ReportsRepository>.value(value: _deps.reports),
+        ListenableProvider<CatalogRepository>.value(value: _deps.catalogs),
         ListenableProvider<VolunteerRepository>.value(value: _deps.volunteers),
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel(

@@ -1,10 +1,12 @@
 const { randomUUID } = require("node:crypto");
+const { hashReportUpdateToken } = require("../security/reportUpdateToken");
 
 // #### TODO: Replace this temporary store with the PostgreSQL-backed repository.
 function copyReport(report) {
+  const { clientUpdateTokenHash, ...publicReport } = report;
   return {
-    ...report,
-    location: { ...report.location },
+    ...publicReport,
+    location: { ...publicReport.location },
   };
 }
 
@@ -28,10 +30,14 @@ class InMemoryReportRepository {
     const report = {
       id: randomUUID(),
       ...input,
+      clientUpdateTokenHash: input.clientUpdateToken
+        ? hashReportUpdateToken(input.clientUpdateToken)
+        : null,
       status: "new",
       createdAt: now,
       updatedAt: now,
     };
+    delete report.clientUpdateToken;
 
     this.reports.set(report.id, report);
     this.reportIdsByClientId.set(report.clientReportId, report.id);
@@ -93,6 +99,21 @@ class InMemoryReportRepository {
     }
 
     report.status = status;
+    report.updatedAt = new Date().toISOString();
+    return copyReport(report);
+  }
+
+  updateGuestDetails(id, { clientUpdateToken, updates }) {
+    const report = this.reports.get(id);
+    if (
+      !report ||
+      !report.clientUpdateTokenHash ||
+      report.clientUpdateTokenHash !== hashReportUpdateToken(clientUpdateToken)
+    ) {
+      return null;
+    }
+
+    Object.assign(report, updates);
     report.updatedAt = new Date().toISOString();
     return copyReport(report);
   }

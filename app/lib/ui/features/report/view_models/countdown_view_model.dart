@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../data/repositories/reports_repository.dart';
 import '../../../../domain/models/models.dart';
 
-enum CountdownEnd { cancelled, sentNow, sentAuto }
+enum CountdownEnd { cancelled, sentNow, sentAuto, sendFailed }
 
 /// The 60 second safety countdown that opens when a sensor detects a shake, crash or fall.
 /// Cancelling is the safe answer; if nobody answers, the help report is sent automatically.
@@ -64,39 +64,45 @@ class CountdownViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void cancel() => _finish(CountdownEnd.cancelled);
+  void cancel() => unawaited(_finish(CountdownEnd.cancelled));
 
-  void sendNow() => _finish(CountdownEnd.sentNow);
+  void sendNow() => unawaited(_finish(CountdownEnd.sentNow));
 
   void _tick() {
     if (!active) return;
     _remaining -= 1;
     if (_remaining <= 0) {
-      _finish(CountdownEnd.sentAuto);
+      unawaited(_finish(CountdownEnd.sentAuto));
     } else {
       notifyListeners();
     }
   }
 
-  void _finish(CountdownEnd end) {
+  Future<void> _finish(CountdownEnd end) async {
     final cause = _cause;
     if (cause == null) return;
     _timer?.cancel();
     _timer = null;
-    _sentReport = end == CountdownEnd.cancelled
-        ? null
-        : _reports.create(
-            kind: ReportKind.help,
-            type: switch (cause) {
-              CountdownCause.quake => IncidentType.quake,
-              CountdownCause.crash => IncidentType.crash,
-              CountdownCause.fall => IncidentType.fall,
-            },
-            auto: end == CountdownEnd.sentAuto,
-          );
-    _end = end;
     _cause = null;
     _remaining = 0;
+    _sentReport = null;
+    if (end != CountdownEnd.cancelled) {
+      try {
+        _sentReport = await _reports.create(
+          kind: ReportKind.help,
+          type: switch (cause) {
+            CountdownCause.quake => IncidentType.quake,
+            CountdownCause.crash => IncidentType.crash,
+            CountdownCause.fall => IncidentType.fall,
+          },
+          auto: end == CountdownEnd.sentAuto,
+        );
+      } on Exception catch (error) {
+        debugPrint('Failed to save countdown report locally: $error');
+        end = CountdownEnd.sendFailed;
+      }
+    }
+    _end = end;
     notifyListeners();
   }
 

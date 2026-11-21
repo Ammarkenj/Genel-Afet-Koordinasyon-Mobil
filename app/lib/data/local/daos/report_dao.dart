@@ -1,38 +1,76 @@
 import 'package:sqflite/sqflite.dart';
+
 import '../database_helper.dart';
 
 class ReportDao {
-  final dbHelper = DatabaseHelper.instance;
+  ReportDao({DatabaseHelper? dbHelper})
+    : _dbHelper = dbHelper ?? DatabaseHelper.instance;
 
-  // إضافة بلاغ جديد (يُحفظ محلياً أولاً)
-  Future<int> insertReport(Map<String, dynamic> report) async {
-    final db = await dbHelper.database;
-    report['is_synced'] = 0; // 0 تعني ينتظر الإنترنت
-    return await db.insert(
+  final DatabaseHelper _dbHelper;
+
+  Future<int> insertReport(Map<String, Object?> report) async {
+    final db = await _dbHelper.database;
+    return db.insert(
       'Reports',
       report,
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 
-  // جلب البلاغات العالقة لرفعها للسحابة
-  Future<List>> getUnsyncedReports() async {
-    final db = await dbHelper.database;
-    return await db.query(
-      'Reports',
-      where: 'is_synced = ?',
-      whereArgs: [0],
+  Future<List<Map<String, Object?>>> getReports() async {
+    final db = await _dbHelper.database;
+    return db.rawQuery(
+      'SELECT rowid AS local_id, * FROM Reports ORDER BY rowid',
     );
   }
 
-  // تحديث حالة البلاغ بعد نجاح الرفع
-  Future<int> markReportAsSynced(String id) async {
-    final db = await dbHelper.database;
-    return await db.update(
+  Future<List<Map<String, Object?>>> getUnsyncedReports() async {
+    final db = await _dbHelper.database;
+    return db.rawQuery(
+      'SELECT rowid AS local_id, * FROM Reports WHERE is_synced = 0 ORDER BY rowid',
+    );
+  }
+
+  Future<int> updateReport(
+    String clientReportId,
+    Map<String, Object?> values,
+  ) async {
+    final db = await _dbHelper.database;
+    return db.update(
       'Reports',
-      {'is_synced': 1},
-      where: 'id = ?',
-      whereArgs: [id],
+      values,
+      where: 'client_report_id = ?',
+      whereArgs: [clientReportId],
+    );
+  }
+
+  Future<int> markReportAsSynced(
+    String clientReportId, {
+    required String serverReportId,
+    required int syncedDetailsRevision,
+  }) {
+    return updateReport(clientReportId, {
+      'is_synced': 1,
+      'delivery_state': 'sent',
+      'delivery_failure': null,
+      'server_report_id': serverReportId,
+      'synced_details_revision': syncedDetailsRevision,
+    });
+  }
+
+  Future<int> markReportAsQueued(String clientReportId) {
+    return updateReport(clientReportId, {
+      'is_synced': 0,
+      'delivery_state': 'queued',
+    });
+  }
+
+  Future<int> deleteQueuedReport(String clientReportId) async {
+    final db = await _dbHelper.database;
+    return db.delete(
+      'Reports',
+      where: 'client_report_id = ? AND is_synced = 0',
+      whereArgs: [clientReportId],
     );
   }
 }

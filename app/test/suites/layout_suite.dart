@@ -53,34 +53,34 @@ void layoutSuite({String? onlyScenario}) {
     'home': (a) async {},
     'home offline with reports': (a) async {
       a.deps.connectivity.setStatus(NetworkStatus.offline);
-      a.read<ReportViewModel>()
-        ..sendSafe()
-        ..sendHelp(IncidentType.fall);
+      final reports = a.read<ReportViewModel>();
+      await reports.sendSafe();
+      await reports.sendHelp(IncidentType.fall);
       await a.settle();
     },
     'select': (a) => a.go('/select'),
     'status sent with details': (a) async {
-      a.read<ReportViewModel>()
-        ..sendHelp(IncidentType.quake)
-        ..setInjured(true);
+      final reports = a.read<ReportViewModel>();
+      await reports.sendHelp(IncidentType.quake);
+      await reports.setInjured(true);
       await a.go('/status');
     },
     'status queued': (a) async {
       a.deps.connectivity.setStatus(NetworkStatus.offline);
-      a.read<ReportViewModel>().sendHelp(IncidentType.fire);
+      await a.read<ReportViewModel>().sendHelp(IncidentType.fire);
       await a.go('/status');
     },
     'status sending': (a) async {
       a.deps.connectivity.setStatus(NetworkStatus.weak);
-      a.read<ReportViewModel>().sendHelp(IncidentType.crash);
+      await a.read<ReportViewModel>().sendHelp(IncidentType.crash);
       await a.go('/status');
     },
     'status safe': (a) async {
-      a.read<ReportViewModel>().sendSafe();
+      await a.read<ReportViewModel>().sendSafe();
       await a.go('/status');
     },
     'status cancel dialog': (a) async {
-      a.read<ReportViewModel>().sendHelp(IncidentType.quake);
+      await a.read<ReportViewModel>().sendHelp(IncidentType.quake);
       await a.go('/status');
       await a.tapText(a.l.statusUndo);
     },

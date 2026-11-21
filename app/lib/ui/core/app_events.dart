@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/repositories/connectivity_repository.dart';
+import '../../data/repositories/catalog_repository.dart';
 import '../../data/repositories/reports_repository.dart';
 import '../../data/repositories/volunteer_repository.dart';
 import '../../l10n/app_localizations.dart';
@@ -31,10 +34,11 @@ class AppEvents extends StatefulWidget {
   State<AppEvents> createState() => _AppEventsState();
 }
 
-class _AppEventsState extends State<AppEvents> {
+class _AppEventsState extends State<AppEvents> with WidgetsBindingObserver {
   late final CountdownViewModel _countdown;
   late final ConnectivityRepository _net;
   late final ReportsRepository _reports;
+  late final CatalogRepository _catalogs;
   late final VolunteerRepository _volunteers;
   late final ReportViewModel _reportVm;
 
@@ -44,9 +48,11 @@ class _AppEventsState extends State<AppEvents> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _countdown = context.read<CountdownViewModel>();
     _net = context.read<ConnectivityRepository>();
     _reports = context.read<ReportsRepository>();
+    _catalogs = context.read<CatalogRepository>();
     _volunteers = context.read<VolunteerRepository>();
     _reportVm = context.read<ReportViewModel>();
     _countdown.addListener(_onCountdown);
@@ -73,11 +79,26 @@ class _AppEventsState extends State<AppEvents> {
         if (l != null && messenger != null) {
           showToastOn(messenger, l.toastCdCancelled);
         }
+      case CountdownEnd.sendFailed:
+        widget.router.go(_countdown.returnTo);
+        final l = _l;
+        final messenger = widget.messengerKey.currentState;
+        if (l != null && messenger != null) {
+          showToastOn(messenger, l.reportSaveFailed);
+        }
       case CountdownEnd.sentNow:
       case CountdownEnd.sentAuto:
         final report = _countdown.sentReport;
         if (report != null) _reportVm.open(report.id);
         widget.router.go('/status');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_reports.syncPending(force: true));
+      _catalogs.refreshInBackground();
     }
   }
 
@@ -92,6 +113,7 @@ class _AppEventsState extends State<AppEvents> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _countdown.removeListener(_onCountdown);
     _net.removeListener(_onNetwork);
     super.dispose();

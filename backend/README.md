@@ -19,6 +19,13 @@ Sunucu varsayılan olarak `0.0.0.0:3000` adresinde çalışır. `PORT` ve `HOST`
 
 Servis ve veritabanı bağlantı durumunu bildirir. Veritabanına erişilemiyorsa `503` döner.
 
+### Kataloglar
+
+`GET /api/v1/shelters` barınakları; `GET /api/v1/guides` acil durum rehberlerini
+PostgreSQL'den okur. Her iki uç da `{ "data": [...] }` biçiminde herkese açık
+yanıt verir ve veri değiştirmez. Seed verileri geliştirme/test içindir; gerçek
+barınak bilgileriyle güncel tutulmalıdır.
+
 ### `POST /api/v1/reports`
 
 Yeni bir ihbar kabul eder. İstemci, çevrimdışı kuyrukta tekrar gönderimlerde aynı `clientReportId` değerini kullanmalıdır. Aynı kimlikle gelen tekrarlar ikinci kayıt oluşturmaz.
@@ -39,6 +46,9 @@ Yeni bir ihbar kabul eder. İstemci, çevrimdışı kuyrukta tekrar gönderimler
 `type` değerleri: `accident`, `fall`, `fire`, `earthquake`, `help`. `description` isteğe bağlıdır. Kişisel veya gereksiz hassas bilgileri bu alana koymayın.
 
 İlk kayıt `201` ve `duplicate: false`; yinelenen gönderi `200` ve önceki kayıtla birlikte `duplicate: true` döndürür.
+`kind` değeri `help` (varsayılan) veya `safe` olabilir. `safe` için `type` null gönderilir. `auto`, `injured`, `trapped` ve `people` alanları isteğe bağlıdır.
+
+İstemci, rapor ayrıntılarını sonradan güncellemek için 32 bayt rastgele `clientUpdateToken` üretip ilk POST isteğiyle gönderebilir. Token açık olarak yanıtlanmaz; sunucuda yalnızca SHA-256 özeti tutulur. `PATCH /api/v1/reports/:id/details` bu token'ı ve güncellenecek ayrıntıları ister; yanlış token veya bulunamayan rapor `404` döndürür.
 
 Misafir ihbar gönderimi IP başına 15 dakikada 10 istekle sınırlandırılır. Limit
 aşılırsa `429` ve `RATE_LIMIT_EXCEEDED` kodu döner. Limit sayacı varsayılan olarak
@@ -71,7 +81,19 @@ PostgreSQL bağlantısını `backend/.env` içindeki `DATABASE_URL` değişkeniy
 npm run db:migrate
 ```
 
-Uygulamayı başlatmak artık PostgreSQL'e bağlanmayı gerektirir. API, ihbarları Prisma üzerinden `Report` tablosuna yazar; çevrimdışı tekrar gönderimleri `client_report_id` benzersiz kısıtıyla güvenle tekilleştirilir. Kimlik doğrulama henüz bulunmadığından `user_id` şimdilik boş bırakılabilir.
+Sabit acil durum rehberlerini ve barınak örneklerini eklemek için:
+
+```powershell
+npx prisma db seed
+```
+
+Seed mevcut rehberleri `title + category`, barınakları `name + category`
+eşleşmesine göre atlar; kullanıcı veya sağlık profili örnekleri oluşturmaz ve
+hiçbir kaydı silmez. Eski seed çalıştırmalarından kalan kayıtları otomatik
+temizlemez. Seed verileri üretim ortamında gerçek barınak bilgisinin yerine
+kullanılmamalıdır.
+
+Uygulamayı başlatmak artık PostgreSQL'e bağlanmayı gerektirir. API, ihbarları Prisma üzerinden `Report` tablosuna yazar; çevrimdışı tekrar gönderimleri `client_report_id` benzersiz kısıtıyla güvenle tekilleştirilir. Misafir raporları kullanıcı hesabına bağlı olmadığından `user_id` boş bırakılabilir.
 
 Bellek içi testler:
 
@@ -87,4 +109,4 @@ npm run test:database
 
 ## Güvenlik sınırları
 
-Misafirler kimlik doğrulamadan ihbar gönderebilir. Kötüye kullanımı engelleyecek rate limit/abuse kontrolleri henüz eklenmedi; bu nedenle POST endpoint'ini açık internete yayınlamayın. İhbar listeleme ve durum güncelleme endpoint'leri personel kimlik doğrulaması/yetkilendirmesi tasarlanana kadar kapalıdır. AFAD entegrasyonu ve Socket.IO gerçek zamanlı yayın sonraki aşamalardır.
+Misafirler kimlik doğrulamadan ihbar gönderebilir; POST endpoint'i IP başına 15 dakikada 10 istekle sınırlandırılmıştır. İhbar listeleme ve durum güncelleme uçları ortak `STAFF_API_TOKEN` ile korunur; personel bazlı hesap ve yetkilendirme sistemi henüz yoktur. AFAD entegrasyonu ve Socket.IO gerçek zamanlı yayın sonraki aşamalardır.

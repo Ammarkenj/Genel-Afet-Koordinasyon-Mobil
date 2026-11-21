@@ -7,9 +7,19 @@ import 'domain/models/models.dart';
 /// `--dart-define=LAB=false` hides the debug review button in a debug build.
 const bool _lab = bool.fromEnvironment('LAB', defaultValue: kDebugMode);
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   // Review links (debug only): ?route=/status&lang=ar&theme=dark&net=offline&seed=help
   final q = _lab ? Uri.base.queryParameters : const <String, String>{};
+  final initialNetwork = NetworkStatus.values.firstWhere(
+    (n) => n.name == q['net'],
+    orElse: () => NetworkStatus.online,
+  );
+  final dependencies = AppDependencies.production();
+  dependencies.connectivity.setStatus(initialNetwork);
+  await dependencies.reports.initialize();
+  await dependencies.catalogs.initialize();
+  dependencies.catalogs.refreshInBackground();
   runApp(
     YasamHattiApp(
       lab: _lab && q['lab'] != '0',
@@ -21,11 +31,8 @@ void main() {
         _ => ThemeMode.system,
       },
       seed: q['seed'],
-      initialNetwork: NetworkStatus.values.firstWhere(
-        (n) => n.name == q['net'],
-        orElse: () => NetworkStatus.online,
-      ),
-      dependencies: AppDependencies.production(),
+      initialNetwork: initialNetwork,
+      dependencies: dependencies,
     ),
   );
 }

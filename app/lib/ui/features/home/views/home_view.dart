@@ -101,9 +101,14 @@ class HomeView extends StatelessWidget {
               icon: AppIconName.shieldCheck,
               variant: AppButtonVariant.safe,
               size: AppButtonSize.xl,
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.mediumImpact();
-                reports.sendSafe();
+                final report = await reports.sendSafe();
+                if (!context.mounted) return;
+                if (report == null) {
+                  showToast(context, l.reportSaveFailed);
+                  return;
+                }
                 context.push('/status');
               },
             ),

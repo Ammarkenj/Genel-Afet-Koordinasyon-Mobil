@@ -1,13 +1,20 @@
 const express = require("express");
+const catalogRoutes = require("./routes/catalogRoutes");
 const healthRoutes = require("./routes/healthRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 
-function createApp({ reportRepository, databaseClient, staffApiToken } = {}) {
+function createApp({
+  catalogRepository,
+  reportRepository,
+  databaseClient,
+  staffApiToken,
+} = {}) {
   const app = express();
 
   app.disable("x-powered-by");
   app.use(express.json({ limit: "32kb" }));
   app.use("/api/v1/health", healthRoutes({ databaseClient }));
+  app.use("/api/v1", catalogRoutes({ catalogRepository }));
   app.use(
     "/api/v1/reports",
     reportRoutes({ reportRepository, staffApiToken }),

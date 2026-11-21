@@ -23,9 +23,14 @@ class SelectView extends StatelessWidget {
     IncidentType.fire,
   ];
 
-  void _send(BuildContext context, IncidentType type) {
+  Future<void> _send(BuildContext context, IncidentType type) async {
     HapticFeedback.heavyImpact();
-    context.read<ReportViewModel>().sendHelp(type);
+    final report = await context.read<ReportViewModel>().sendHelp(type);
+    if (!context.mounted) return;
+    if (report == null) {
+      showToast(context, AppLocalizations.of(context).reportSaveFailed);
+      return;
+    }
     context.pushReplacement('/status');
   }
 

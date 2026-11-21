@@ -87,13 +87,19 @@ model Report {
   user_id          String?
   event_id          String?
   client_report_id String?  @unique
+  kind             String   @default("help")
   status_type      String
-  type             String   @default("help")
+  type             String?
+  auto             Boolean  @default(false)
   occurred_at      DateTime @default(now())
   latitude         Float
   longitude        Float
   address_text     String?
   description      String?
+  injured          Boolean?
+  trapped          Boolean?
+  people           Int      @default(1)
+  client_update_token_hash String?
   battery_level    Int?
   is_synced        Int      @default(0)
   created_at       DateTime @default(now())

@@ -1,22 +1,36 @@
 import 'package:sqflite/sqflite.dart';
+
+import '../../../domain/models/models.dart';
 import '../database_helper.dart';
 
 class GuideDao {
-  final dbHelper = DatabaseHelper.instance;
+  GuideDao({DatabaseHelper? dbHelper})
+    : _dbHelper = dbHelper ?? DatabaseHelper.instance;
 
-  // إدخال أدلة الطوارئ دفعة واحدة
-  Future<void> insertGuides(List> guides) async {
-    final db = await dbHelper.database;
-    Batch batch = db.batch();
-    for (var guide in guides) {
-      batch.insert('EmergencyGuides', guide, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-    await batch.commit(noResult: true);
+  final DatabaseHelper _dbHelper;
+
+  Future<void> replaceAll(List<EmergencyGuide> guides) async {
+    final db = await _dbHelper.database;
+    await db.transaction((transaction) async {
+      await transaction.delete('EmergencyGuides');
+      final batch = transaction.batch();
+      for (final guide in guides) {
+        batch.insert(
+          'EmergencyGuides',
+          guide.toDatabase(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
   }
 
-  // جلب كل الأدلة ليعرضها الفرونت إند في واجهة التعليمات
-  Future<List>> getAllGuides() async {
-    final db = await dbHelper.database;
-    return await db.query('EmergencyGuides');
+  Future<List<EmergencyGuide>> getAllGuides() async {
+    final db = await _dbHelper.database;
+    final rows = await db.query(
+      'EmergencyGuides',
+      orderBy: 'category COLLATE NOCASE ASC, title COLLATE NOCASE ASC',
+    );
+    return rows.map(EmergencyGuide.fromDatabase).toList(growable: false);
   }
 }

@@ -20,8 +20,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -90,12 +91,26 @@ class DatabaseHelper {
       CREATE TABLE Reports (
         id TEXT PRIMARY KEY,
         user_id TEXT,
+        kind TEXT NOT NULL DEFAULT 'help',
         type TEXT,
+        auto INTEGER NOT NULL DEFAULT 0,
         description TEXT,
         latitude REAL,
         longitude REAL,
-        is_synced INTEGER DEFAULT 0,
-        created_at TEXT,
+        client_report_id TEXT NOT NULL UNIQUE,
+        client_update_token TEXT NOT NULL,
+        server_report_id TEXT,
+        is_synced INTEGER NOT NULL DEFAULT 0,
+        delivery_state TEXT NOT NULL DEFAULT 'queued',
+        delivery_failure TEXT,
+        can_undo INTEGER NOT NULL DEFAULT 1,
+        details_revision INTEGER NOT NULL DEFAULT 0,
+        synced_details_revision INTEGER NOT NULL DEFAULT 0,
+        injured INTEGER,
+        trapped INTEGER,
+        people INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL,
+        occurred_at TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES Users (id)
       )
     ''');
@@ -115,5 +130,55 @@ class DatabaseHelper {
         FOREIGN KEY (user_id) REFERENCES Users (id)
       )
     ''');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        "ALTER TABLE Reports ADD COLUMN kind TEXT NOT NULL DEFAULT 'help'",
+      );
+      await db.execute(
+        'ALTER TABLE Reports ADD COLUMN auto INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute('ALTER TABLE Reports ADD COLUMN client_report_id TEXT');
+      await db.execute(
+        'ALTER TABLE Reports ADD COLUMN client_update_token TEXT',
+      );
+      await db.execute('ALTER TABLE Reports ADD COLUMN server_report_id TEXT');
+      await db.execute(
+        "ALTER TABLE Reports ADD COLUMN delivery_state TEXT NOT NULL DEFAULT 'queued'",
+      );
+      await db.execute('ALTER TABLE Reports ADD COLUMN delivery_failure TEXT');
+      await db.execute(
+        'ALTER TABLE Reports ADD COLUMN can_undo INTEGER NOT NULL DEFAULT 1',
+      );
+      await db.execute('''
+        UPDATE Reports SET can_undo = 0 WHERE is_synced = 1
+      ''');
+      await db.execute(
+        'ALTER TABLE Reports ADD COLUMN details_revision INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE Reports ADD COLUMN synced_details_revision INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute('ALTER TABLE Reports ADD COLUMN injured INTEGER');
+      await db.execute('ALTER TABLE Reports ADD COLUMN trapped INTEGER');
+      await db.execute(
+        'ALTER TABLE Reports ADD COLUMN people INTEGER NOT NULL DEFAULT 1',
+      );
+      await db.execute('ALTER TABLE Reports ADD COLUMN occurred_at TEXT');
+      await db.execute(
+        "UPDATE Reports SET client_report_id = 'legacy-' || id WHERE client_report_id IS NULL",
+      );
+      await db.execute(
+        'UPDATE Reports SET occurred_at = COALESCE(created_at, CURRENT_TIMESTAMP) WHERE occurred_at IS NULL',
+      );
+      await db.execute(
+        'UPDATE Reports SET delivery_state = CASE WHEN is_synced = 1 THEN \'sent\' ELSE \'queued\' END',
+      );
+      await db.execute(
+        'CREATE UNIQUE INDEX Reports_client_report_id_key ON Reports(client_report_id)',
+      );
+    }
   }
 }

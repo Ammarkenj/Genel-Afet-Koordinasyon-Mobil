@@ -2,6 +2,7 @@ require("dotenv").config({ path: require("node:path").resolve(__dirname, "..", "
 
 const { PrismaClient } = require("@prisma/client");
 const { createApp } = require("./app");
+const { PrismaCatalogRepository } = require("./repositories/prismaCatalogRepository");
 const { PrismaReportRepository } = require("./repositories/prismaReportRepository");
 
 async function startServer() {
@@ -20,6 +21,7 @@ async function startServer() {
   await prisma.$connect();
 
   const server = createApp({
+    catalogRepository: new PrismaCatalogRepository(prisma),
     reportRepository: new PrismaReportRepository(prisma),
     databaseClient: prisma,
     staffApiToken: process.env.STAFF_API_TOKEN,
