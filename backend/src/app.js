@@ -2,13 +2,16 @@ const express = require("express");
 const healthRoutes = require("./routes/healthRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 
-function createApp({ reportRepository, databaseClient } = {}) {
+function createApp({ reportRepository, databaseClient, staffApiToken } = {}) {
   const app = express();
 
   app.disable("x-powered-by");
   app.use(express.json({ limit: "32kb" }));
   app.use("/api/v1/health", healthRoutes({ databaseClient }));
-  app.use("/api/v1/reports", reportRoutes({ reportRepository }));
+  app.use(
+    "/api/v1/reports",
+    reportRoutes({ reportRepository, staffApiToken }),
+  );
 
   app.use((req, res) => {
     res.status(404).json({

@@ -22,6 +22,7 @@ async function startServer() {
   const server = createApp({
     reportRepository: new PrismaReportRepository(prisma),
     databaseClient: prisma,
+    staffApiToken: process.env.STAFF_API_TOKEN,
   }).listen(port, host, () => {
     console.log(`YaşamHattı backend listening on http://${host}:${port}`);
   });
