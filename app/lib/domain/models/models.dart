@@ -183,18 +183,6 @@ class VolunteerTask {
   bool done;
 }
 
-class AssemblyArea {
-  const AssemblyArea({
-    required this.number,
-    required this.meters,
-    required this.minutes,
-  });
-
-  final int number;
-  final int meters;
-  final int minutes;
-}
-
 String _catalogString(Object? value, String field) {
   if (value is String) return value;
   throw FormatException('Catalog field "$field" must be a string.');

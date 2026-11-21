@@ -404,48 +404,57 @@ class AppLocalizationsAr extends AppLocalizations {
   String get toastVolJoined => 'تم تسجيلك متطوعاً.';
 
   @override
-  String get mapTitle => 'نقاط التجمّع';
+  String get mapTitle => 'الملاجئ';
 
   @override
-  String get mapAlt => 'خريطة: موقعك وثلاث نقاط تجمّع مرقّمة';
+  String get mapAlt => 'معاينة تخطيطية لا تعرض المواقع الجغرافية الفعلية';
 
   @override
-  String get mapOffline => 'خريطة بلا إنترنت — منطقة محفوظة';
+  String get mapOffline => 'غير متصل';
 
   @override
-  String get mapOnline => 'الخريطة محدَّثة';
+  String get mapOnline => 'متصل';
 
   @override
-  String get mapNearest => 'الأقرب';
+  String get mapSyncing => 'جارٍ تحديث الملاجئ';
 
   @override
-  String get mapSelected => 'النقطة المختارة';
+  String get mapStale => 'تعذّر تحديث القائمة';
 
   @override
-  String mapWalk(int m, int min) {
-    return '$m م · $min د مشياً';
+  String get mapSchemaNote =>
+      'هذا الرسم تخطيطي وليس خريطة للمواقع الفعلية. الإحداثيات مدرجة أدناه.';
+
+  @override
+  String get mapAll => 'كل الملاجئ';
+
+  @override
+  String get mapLoading => 'جارٍ تحميل الملاجئ…';
+
+  @override
+  String get mapEmpty => 'لا توجد ملاجئ مسجّلة بعد.';
+
+  @override
+  String get mapLoadFailed =>
+      'تعذّر تحديث الملاجئ. تحقق من الاتصال وحاول مجدداً.';
+
+  @override
+  String get mapRetry => 'تحديث';
+
+  @override
+  String mapCoordinates(String coordinates) {
+    return 'الإحداثيات: $coordinates';
   }
 
   @override
-  String get mapStart => 'ابدأ المسار';
+  String mapCapacity(int count) {
+    return 'السعة: $count شخص';
+  }
 
   @override
-  String get mapStop => 'أوقف المسار';
-
-  @override
-  String get mapRouteOn => 'المسار معروض على الخريطة';
-
-  @override
-  String get mapAll => 'كل النقاط';
-
-  @override
-  String get area1 => 'نقطة تجمّع حديقة الثقافة';
-
-  @override
-  String get area2 => 'ملعب الحرم الجامعي';
-
-  @override
-  String get area3 => 'ساحة البلدية';
+  String mapFeatures(String features) {
+    return 'المرافق: $features';
+  }
 
   @override
   String get toolsTitle => 'أدوات الطوارئ';

@@ -412,48 +412,57 @@ class AppLocalizationsTr extends AppLocalizations {
   String get toastVolJoined => 'Gönüllü olarak kaydoldunuz.';
 
   @override
-  String get mapTitle => 'Toplanma alanları';
+  String get mapTitle => 'Barınaklar';
 
   @override
-  String get mapAlt => 'Harita: konumunuz ve numaralı üç toplanma alanı';
+  String get mapAlt => 'Gerçek konumları göstermeyen şematik harita önizlemesi';
 
   @override
-  String get mapOffline => 'Çevrimdışı harita — kayıtlı bölge';
+  String get mapOffline => 'Çevrimdışı';
 
   @override
-  String get mapOnline => 'Harita güncel';
+  String get mapOnline => 'Çevrimiçi';
 
   @override
-  String get mapNearest => 'En yakın';
+  String get mapSyncing => 'Barınaklar güncelleniyor';
 
   @override
-  String get mapSelected => 'Seçili alan';
+  String get mapStale => 'Katalog güncellenemedi';
 
   @override
-  String mapWalk(int m, int min) {
-    return '$m m · $min dk yürüyerek';
+  String get mapSchemaNote =>
+      'Bu çizim şematiktir, gerçek konum haritası değildir. Barınak koordinatları listede yer alır.';
+
+  @override
+  String get mapAll => 'Tüm barınaklar';
+
+  @override
+  String get mapLoading => 'Barınaklar yükleniyor…';
+
+  @override
+  String get mapEmpty => 'Henüz barınak kaydı yok.';
+
+  @override
+  String get mapLoadFailed =>
+      'Barınaklar güncellenemedi. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get mapRetry => 'Yenile';
+
+  @override
+  String mapCoordinates(String coordinates) {
+    return 'Koordinatlar: $coordinates';
   }
 
   @override
-  String get mapStart => 'Rotayı başlat';
+  String mapCapacity(int count) {
+    return 'Kapasite: $count kişi';
+  }
 
   @override
-  String get mapStop => 'Rotayı durdur';
-
-  @override
-  String get mapRouteOn => 'Rota haritada gösteriliyor';
-
-  @override
-  String get mapAll => 'Tüm alanlar';
-
-  @override
-  String get area1 => 'Kültür Park Toplanma Alanı';
-
-  @override
-  String get area2 => 'Üniversite Kampüsü Spor Sahası';
-
-  @override
-  String get area3 => 'Belediye Meydanı';
+  String mapFeatures(String features) {
+    return 'Özellikler: $features';
+  }
 
   @override
   String get toolsTitle => 'Acil durum araçları';

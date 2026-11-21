@@ -1,29 +1,29 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../data/repositories/catalog_repository.dart';
 import '../../../../domain/models/models.dart';
 
-/// Assembly areas and the walking route. Sample data; the offline map layer and routing come later.
+/// Keeps the map screen in sync with the shelter catalog.
 class MapViewModel extends ChangeNotifier {
-  static const areas = [
-    AssemblyArea(number: 1, meters: 450, minutes: 6),
-    AssemblyArea(number: 2, meters: 900, minutes: 12),
-    AssemblyArea(number: 3, meters: 1400, minutes: 18),
-  ];
+  MapViewModel(this._catalogs) {
+    _catalogs.addListener(_onCatalogsChanged);
+  }
 
-  int _selected = 0;
-  bool _routeOn = false;
+  final CatalogRepository _catalogs;
 
-  int get selected => _selected;
-  bool get routeOn => _routeOn;
-  AssemblyArea get area => areas[_selected];
+  List<Shelter> get shelters => _catalogs.shelters;
+  bool get refreshing => _catalogs.refreshing;
+  CatalogSyncException? get lastError => _catalogs.lastError;
 
-  void select(int index) {
-    _selected = index;
+  void refresh() => _catalogs.refreshInBackground();
+
+  void _onCatalogsChanged() {
     notifyListeners();
   }
 
-  void toggleRoute() {
-    _routeOn = !_routeOn;
-    notifyListeners();
+  @override
+  void dispose() {
+    _catalogs.removeListener(_onCatalogsChanged);
+    super.dispose();
   }
 }
