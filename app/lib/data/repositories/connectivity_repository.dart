@@ -1,24 +1,21 @@
 import 'package:flutter/foundation.dart';
-
 import '../../domain/models/models.dart';
 
-/// Network state. The real implementation will read the platform connectivity; this one is driven by the lab panel.
-abstract class ConnectivityRepository implements Listenable {
+abstract class ConnectivityRepository extends ChangeNotifier {
   NetworkStatus get status;
-  void setStatus(NetworkStatus status);
+  // تمت إضافة الدالة هنا ليتعرف عليها التطبيق
+  void setStatus(NetworkStatus newStatus); 
 }
 
-class FakeConnectivityRepository extends ChangeNotifier
-    implements ConnectivityRepository {
+class FakeConnectivityRepository extends ConnectivityRepository {
   NetworkStatus _status = NetworkStatus.online;
 
   @override
   NetworkStatus get status => _status;
 
   @override
-  void setStatus(NetworkStatus status) {
-    if (status == _status) return;
-    _status = status;
+  void setStatus(NetworkStatus newStatus) {
+    _status = newStatus;
     notifyListeners();
   }
 }

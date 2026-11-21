@@ -42,6 +42,8 @@ dependencies:
   http: ^1.5.0
   flutter_localizations:
     sdk: flutter
+  sqflite: ^2.4.5
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
