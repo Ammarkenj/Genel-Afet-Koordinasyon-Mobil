@@ -40,6 +40,27 @@ Yeni bir ihbar kabul eder. İstemci, çevrimdışı kuyrukta tekrar gönderimler
 
 İlk kayıt `201` ve `duplicate: false`; yinelenen gönderi `200` ve önceki kayıtla birlikte `duplicate: true` döndürür.
 
+Misafir ihbar gönderimi IP başına 15 dakikada 10 istekle sınırlandırılır. Limit
+aşılırsa `429` ve `RATE_LIMIT_EXCEEDED` kodu döner. Limit sayacı varsayılan olarak
+uygulama belleğinde tutulur; yeniden başlatmada sıfırlanır ve birden fazla backend
+örneği arasında paylaşılmaz. Çok örnekli dağıtımda paylaşımlı bir rate-limit store
+kullanılmalıdır.
+
+### Personel ihbar erişimi
+
+`GET /api/v1/reports` (filtreleme/sayfalama) ve
+`PATCH /api/v1/reports/:id/status` uçları `Authorization: Bearer <token>` ister.
+Token'ı `backend/.env` dosyasındaki `STAFF_API_TOKEN` değişkeninde veya ortamda
+tanımlayın. Token tanımlı değilse bu iki uç `503` döndürür; geçersiz veya eksik
+token `401` döndürür. Misafirlerin `POST /api/v1/reports` ihbar gönderimi token
+gerektirmez.
+
+Örnek listeleme filtreleri: `status`, `startDate`, `endDate`, `minLat`, `maxLat`,
+`minLon`, `maxLon`, `limit` ve `offset`. Durum geçişleri doğrulanır; geçersiz
+geçişler `400` döndürür. Token'ı kaynak koduna veya Git'e eklemeyin. Bu paylaşılan
+MVP token'ını yalnızca TLS arkasında kullanın; personel bazlı hesap/rol sistemi
+henüz yoktur.
+
 ## Veritabanı
 
 PostgreSQL bağlantısını `backend/.env` içindeki `DATABASE_URL` değişkeniyle yapılandırın. Bu dosya Git tarafından yok sayılır; bağlantı bilgisini depoya eklemeyin.
