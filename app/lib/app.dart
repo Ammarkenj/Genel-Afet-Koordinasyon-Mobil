@@ -223,7 +223,9 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
         ChangeNotifierProvider(create: (_) => ToolsViewModel()),
         ChangeNotifierProvider(create: (_) => OnboardingViewModel()),
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
-        ChangeNotifierProvider(create: (_) => MapViewModel()),
+        ChangeNotifierProvider(
+          create: (c) => MapViewModel(c.read<CatalogRepository>()),
+        ),
         ChangeNotifierProvider(create: (_) => DonateViewModel()),
         ChangeNotifierProvider(
           create: (c) => VolunteerViewModel(c.read<VolunteerRepository>()),

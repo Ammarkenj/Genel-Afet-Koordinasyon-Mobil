@@ -82,12 +82,6 @@ extension AppLabels on AppLocalizations {
     2 => volUrg2,
     _ => volUrg3,
   };
-
-  String areaName(int number) => switch (number) {
-    1 => area1,
-    2 => area2,
-    _ => area3,
-  };
 }
 
 AppIconName incidentIcon(IncidentType t) => switch (t) {
@@ -125,11 +119,12 @@ Tone networkTone(NetworkStatus n) =>
   DeliveryState.sending => (tone: Tone.info, icon: AppIconName.sync),
 };
 
-({Tone tone, AppIconName icon}) reportDeliveryStyle(ReportDeliveryState s) =>
-    switch (s) {
-      ReportDeliveryState.sent => (tone: Tone.ok, icon: AppIconName.checkCircle),
-      ReportDeliveryState.queued => (tone: Tone.warn, icon: AppIconName.clock),
-      ReportDeliveryState.sending => (tone: Tone.info, icon: AppIconName.sync),
-      ReportDeliveryState.failed => (tone: Tone.danger, icon: AppIconName.alert),
-      ReportDeliveryState.localOnly => (tone: Tone.warn, icon: AppIconName.info),
-    };
+({Tone tone, AppIconName icon}) reportDeliveryStyle(
+  ReportDeliveryState s,
+) => switch (s) {
+  ReportDeliveryState.sent => (tone: Tone.ok, icon: AppIconName.checkCircle),
+  ReportDeliveryState.queued => (tone: Tone.warn, icon: AppIconName.clock),
+  ReportDeliveryState.sending => (tone: Tone.info, icon: AppIconName.sync),
+  ReportDeliveryState.failed => (tone: Tone.danger, icon: AppIconName.alert),
+  ReportDeliveryState.localOnly => (tone: Tone.warn, icon: AppIconName.info),
+};

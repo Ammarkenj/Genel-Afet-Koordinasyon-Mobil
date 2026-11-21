@@ -4,7 +4,6 @@ import 'package:yasamhatti/domain/models/models.dart';
 import 'package:yasamhatti/ui/features/donate/view_models/donate_view_model.dart';
 import 'package:yasamhatti/ui/features/home/views/afad_sheet.dart';
 import 'package:yasamhatti/ui/features/login/view_models/login_view_model.dart';
-import 'package:yasamhatti/ui/features/map/view_models/map_view_model.dart';
 import 'package:yasamhatti/ui/features/onboarding/view_models/onboarding_view_model.dart';
 import 'package:yasamhatti/ui/features/report/view_models/countdown_view_model.dart';
 import 'package:yasamhatti/ui/features/report/view_models/report_view_model.dart';
@@ -96,13 +95,6 @@ void layoutSuite({String? onlyScenario}) {
       await a.settle();
     },
     'map': (a) => a.go('/map'),
-    'map route selected': (a) async {
-      await a.go('/map');
-      a.read<MapViewModel>()
-        ..select(2)
-        ..toggleRoute();
-      await a.settle();
-    },
     'map offline': (a) async {
       a.deps.connectivity.setStatus(NetworkStatus.offline);
       await a.go('/map');

@@ -857,86 +857,92 @@ abstract class AppLocalizations {
   /// No description provided for @mapTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Toplanma alanları'**
+  /// **'Barınaklar'**
   String get mapTitle;
 
   /// No description provided for @mapAlt.
   ///
   /// In tr, this message translates to:
-  /// **'Harita: konumunuz ve numaralı üç toplanma alanı'**
+  /// **'Gerçek konumları göstermeyen şematik harita önizlemesi'**
   String get mapAlt;
 
   /// No description provided for @mapOffline.
   ///
   /// In tr, this message translates to:
-  /// **'Çevrimdışı harita — kayıtlı bölge'**
+  /// **'Çevrimdışı'**
   String get mapOffline;
 
   /// No description provided for @mapOnline.
   ///
   /// In tr, this message translates to:
-  /// **'Harita güncel'**
+  /// **'Çevrimiçi'**
   String get mapOnline;
 
-  /// No description provided for @mapNearest.
+  /// No description provided for @mapSyncing.
   ///
   /// In tr, this message translates to:
-  /// **'En yakın'**
-  String get mapNearest;
+  /// **'Barınaklar güncelleniyor'**
+  String get mapSyncing;
 
-  /// No description provided for @mapSelected.
+  /// No description provided for @mapStale.
   ///
   /// In tr, this message translates to:
-  /// **'Seçili alan'**
-  String get mapSelected;
+  /// **'Katalog güncellenemedi'**
+  String get mapStale;
 
-  /// No description provided for @mapWalk.
+  /// No description provided for @mapSchemaNote.
   ///
   /// In tr, this message translates to:
-  /// **'{m} m · {min} dk yürüyerek'**
-  String mapWalk(int m, int min);
-
-  /// No description provided for @mapStart.
-  ///
-  /// In tr, this message translates to:
-  /// **'Rotayı başlat'**
-  String get mapStart;
-
-  /// No description provided for @mapStop.
-  ///
-  /// In tr, this message translates to:
-  /// **'Rotayı durdur'**
-  String get mapStop;
-
-  /// No description provided for @mapRouteOn.
-  ///
-  /// In tr, this message translates to:
-  /// **'Rota haritada gösteriliyor'**
-  String get mapRouteOn;
+  /// **'Bu çizim şematiktir, gerçek konum haritası değildir. Barınak koordinatları listede yer alır.'**
+  String get mapSchemaNote;
 
   /// No description provided for @mapAll.
   ///
   /// In tr, this message translates to:
-  /// **'Tüm alanlar'**
+  /// **'Tüm barınaklar'**
   String get mapAll;
 
-  /// No description provided for @area1.
+  /// No description provided for @mapLoading.
   ///
   /// In tr, this message translates to:
-  /// **'Kültür Park Toplanma Alanı'**
-  String get area1;
+  /// **'Barınaklar yükleniyor…'**
+  String get mapLoading;
 
-  /// No description provided for @area2.
+  /// No description provided for @mapEmpty.
   ///
   /// In tr, this message translates to:
-  /// **'Üniversite Kampüsü Spor Sahası'**
-  String get area2;
+  /// **'Henüz barınak kaydı yok.'**
+  String get mapEmpty;
 
-  /// No description provided for @area3.
+  /// No description provided for @mapLoadFailed.
   ///
   /// In tr, this message translates to:
-  /// **'Belediye Meydanı'**
-  String get area3;
+  /// **'Barınaklar güncellenemedi. Bağlantınızı kontrol edip tekrar deneyin.'**
+  String get mapLoadFailed;
+
+  /// No description provided for @mapRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yenile'**
+  String get mapRetry;
+
+  /// No description provided for @mapCoordinates.
+  ///
+  /// In tr, this message translates to:
+  /// **'Koordinatlar: {coordinates}'**
+  String mapCoordinates(String coordinates);
+
+  /// No description provided for @mapCapacity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapasite: {count} kişi'**
+  String mapCapacity(int count);
+
+  /// No description provided for @mapFeatures.
+  ///
+  /// In tr, this message translates to:
+  /// **'Özellikler: {features}'**
+  String mapFeatures(String features);
 
   /// No description provided for @toolsTitle.
   ///

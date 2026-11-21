@@ -1,9 +1,10 @@
 # YaşamHattı (Flutter)
 
 The phone UI is built from the HTML prototype in `../prototype` (design rules:
-`../design-system/yasamhatti/MASTER.md`). Guest emergency reports use the backend API; other sample-data
-features, Wear OS watch, real sensors, persistent offline report storage, offline map, SMS and payments
-are not built yet.
+`../design-system/yasamhatti/MASTER.md`). Guest emergency reports and the shelter catalog use the backend
+API; shelter data is cached locally for offline viewing. The map drawing is still illustrative and does
+not show geographic tiles or routes. Wear OS watch, real sensors, persistent offline report storage, SMS
+and payments are not built yet.
 
 ## Structure (MVVM, `ChangeNotifier` + `provider`, `go_router`)
 

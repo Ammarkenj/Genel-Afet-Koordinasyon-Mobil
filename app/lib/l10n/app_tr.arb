@@ -150,30 +150,42 @@
   "toastLoggedOut": "Çıkış yapıldı.",
   "toastProto": "Bu işlem prototipte gösterilmez.",
   "toastVolJoined": "Gönüllü olarak kaydoldunuz.",
-  "mapTitle": "Toplanma alanları",
-  "mapAlt": "Harita: konumunuz ve numaralı üç toplanma alanı",
-  "mapOffline": "Çevrimdışı harita — kayıtlı bölge",
-  "mapOnline": "Harita güncel",
-  "mapNearest": "En yakın",
-  "mapSelected": "Seçili alan",
-  "mapWalk": "{m} m · {min} dk yürüyerek",
-  "@mapWalk": {
+  "mapTitle": "Barınaklar",
+  "mapAlt": "Gerçek konumları göstermeyen şematik harita önizlemesi",
+  "mapOffline": "Çevrimdışı",
+  "mapOnline": "Çevrimiçi",
+  "mapSyncing": "Barınaklar güncelleniyor",
+  "mapStale": "Katalog güncellenemedi",
+  "mapSchemaNote": "Bu çizim şematiktir, gerçek konum haritası değildir. Barınak koordinatları listede yer alır.",
+  "mapAll": "Tüm barınaklar",
+  "mapLoading": "Barınaklar yükleniyor…",
+  "mapEmpty": "Henüz barınak kaydı yok.",
+  "mapLoadFailed": "Barınaklar güncellenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
+  "mapRetry": "Yenile",
+  "mapCoordinates": "Koordinatlar: {coordinates}",
+  "@mapCoordinates": {
     "placeholders": {
-      "m": {
-        "type": "int"
-      },
-      "min": {
+      "coordinates": {
+        "type": "String"
+      }
+    }
+  },
+  "mapCapacity": "Kapasite: {count} kişi",
+  "@mapCapacity": {
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }
   },
-  "mapStart": "Rotayı başlat",
-  "mapStop": "Rotayı durdur",
-  "mapRouteOn": "Rota haritada gösteriliyor",
-  "mapAll": "Tüm alanlar",
-  "area1": "Kültür Park Toplanma Alanı",
-  "area2": "Üniversite Kampüsü Spor Sahası",
-  "area3": "Belediye Meydanı",
+  "mapFeatures": "Özellikler: {features}",
+  "@mapFeatures": {
+    "placeholders": {
+      "features": {
+        "type": "String"
+      }
+    }
+  },
   "toolsTitle": "Acil durum araçları",
   "toolsSirenTitle": "Siren",
   "toolsSirenDesc": "Yüksek sesle dikkat çeker; enkaz altında yerinizi bildirir.",
