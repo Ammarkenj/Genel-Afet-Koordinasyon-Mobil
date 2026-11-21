@@ -13,20 +13,30 @@ class ReportViewModel extends ChangeNotifier {
 
   final ReportsRepository _reports;
   int? _currentId;
+  bool _creationFailed = false;
 
   List<Report> get recent => _reports.reports.reversed.take(3).toList();
   int get queuedCount => _reports.queuedCount;
   Report? get current => _currentId == null ? null : _reports.byId(_currentId!);
+  bool get creationFailed => _creationFailed;
 
-  Report sendHelp(IncidentType type) => _make(ReportKind.help, type);
+  Future<Report?> sendHelp(IncidentType type) => _make(ReportKind.help, type);
 
-  Report sendSafe() => _make(ReportKind.safe, null);
+  Future<Report?> sendSafe() => _make(ReportKind.safe, null);
 
-  Report _make(ReportKind kind, IncidentType? type) {
-    final report = _reports.create(kind: kind, type: type);
-    _currentId = report.id;
-    notifyListeners();
-    return report;
+  Future<Report?> _make(ReportKind kind, IncidentType? type) async {
+    _creationFailed = false;
+    try {
+      final report = await _reports.create(kind: kind, type: type);
+      _currentId = report.id;
+      notifyListeners();
+      return report;
+    } on Exception catch (error) {
+      debugPrint('Report could not be saved locally (${error.runtimeType}).');
+      _creationFailed = true;
+      notifyListeners();
+      return null;
+    }
   }
 
   void open(int id) {
@@ -35,44 +45,45 @@ class ReportViewModel extends ChangeNotifier {
   }
 
   /// Takes back a report that was sent by mistake.
-  void undo() {
+  Future<void> undo() async {
     final id = _currentId;
     if (id == null) return;
-    _reports.remove(id);
+    await _reports.remove(id);
     _currentId = null;
+    notifyListeners();
   }
 
-  void retry() {
+  Future<void> retry() async {
     final id = _currentId;
     if (id == null) return;
-    _reports.retry(id);
+    await _reports.retry(id);
   }
 
-  void setInjured(bool value) {
+  Future<void> setInjured(bool value) async {
     final r = current;
     if (r == null) return;
     // Tapping the chosen answer again clears it.
-    _reports.update(
+    await _reports.update(
       r.id,
       injured: r.injured == value ? null : value,
       clearInjured: r.injured == value,
     );
   }
 
-  void setTrapped(bool value) {
+  Future<void> setTrapped(bool value) async {
     final r = current;
     if (r == null) return;
-    _reports.update(
+    await _reports.update(
       r.id,
       trapped: r.trapped == value ? null : value,
       clearTrapped: r.trapped == value,
     );
   }
 
-  void changePeople(int delta) {
+  Future<void> changePeople(int delta) async {
     final r = current;
     if (r == null) return;
-    _reports.update(r.id, people: r.people + delta);
+    await _reports.update(r.id, people: r.people + delta);
   }
 
   int takeFlushedCount() => _reports.takeFlushedCount();

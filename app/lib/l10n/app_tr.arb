@@ -99,6 +99,7 @@
   "statusSendingDesc": "Konumunuz alınıyor ve ihbarınız sunucuya gönderiliyor.",
   "statusFailedTitle": "Bildirim gönderilemedi",
   "statusFailedDesc": "Konum veya sunucu bağlantısı başarısız. Bağlantıyı kontrol edip tekrar deneyin.",
+  "reportSaveFailed": "Bildirim cihazda kaydedilemedi. Lütfen tekrar deneyin.",
   "statusRetry": "Tekrar dene",
   "statusLocalOnlyTitle": "Sunucuya gönderilmedi",
   "statusLocalOnlyDesc": "Güvende bildirimi şu anda sunucuya iletilmiyor.",

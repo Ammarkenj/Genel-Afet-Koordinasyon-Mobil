@@ -8,27 +8,29 @@ import 'connectivity_repository.dart';
 
 /// Repository interface for reports sent to the backend or simulated in tests.
 abstract class ReportsRepository implements Listenable {
+  Future<void> initialize();
+  Future<int> syncPending({bool force = false});
   List<Report> get reports;
   Report? byId(int id);
   int get queuedCount;
-  Report create({
+  Future<Report> create({
     required ReportKind kind,
     IncidentType? type,
     bool auto = false,
   });
-  void remove(int id);
-  void retry(int id);
+  Future<void> remove(int id);
+  Future<void> retry(int id);
   void dispose();
-  void update(
+  Future<void> update(
     int id, {
     bool? injured,
     bool? trapped,
     int? people,
-    bool clearInjured,
-    bool clearTrapped,
+    bool clearInjured = false,
+    bool clearTrapped = false,
   });
 
-    /// Number of queued reports sent by the last network change (for the toast).
+  /// Number of queued reports sent by the last network change (for the toast).
   int takeFlushedCount();
 }
 
@@ -51,6 +53,12 @@ class FakeReportsRepository extends ChangeNotifier
   List<Report> get reports => List.unmodifiable(_reports);
 
   @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<int> syncPending({bool force = false}) async => 0;
+
+  @override
   Report? byId(int id) {
     for (final r in _reports) {
       if (r.id == id) return r;
@@ -63,11 +71,11 @@ class FakeReportsRepository extends ChangeNotifier
       _reports.where((r) => r.state == ReportDeliveryState.queued).length;
 
   @override
-  Report create({
+  Future<Report> create({
     required ReportKind kind,
     IncidentType? type,
     bool auto = false,
-  }) {
+  }) async {
     final occurredAt = DateTime.now();
     final report = Report(
       id: ++_seq,
@@ -97,16 +105,16 @@ class FakeReportsRepository extends ChangeNotifier
   }
 
   @override
-  void remove(int id) {
+  Future<void> remove(int id) async {
     _reports.removeWhere((r) => r.id == id);
     notifyListeners();
   }
 
   @override
-  void retry(int id) {}
+  Future<void> retry(int id) async {}
 
   @override
-  void update(
+  Future<void> update(
     int id, {
     bool? injured,
     bool? trapped,
@@ -115,11 +123,12 @@ class FakeReportsRepository extends ChangeNotifier
     bool clearTrapped = false,
   }) {
     final r = byId(id);
-    if (r == null) return;
+    if (r == null) return Future<void>.value();
     if (injured != null || clearInjured) r.injured = injured;
     if (trapped != null || clearTrapped) r.trapped = trapped;
     if (people != null) r.people = people.clamp(1, 99);
     notifyListeners();
+    return Future<void>.value();
   }
 
   void _onNetworkChanged() {

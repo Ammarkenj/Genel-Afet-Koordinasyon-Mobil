@@ -1,4 +1,5 @@
 const REPORT_TYPES = new Set(["accident", "fall", "fire", "earthquake", "help"]);
+const REPORT_KINDS = new Set(["help", "safe"]);
 const REPORT_STATUSES = new Set(["new", "reviewing", "assigned", "resolved"]);
 const STATUS_TRANSITIONS = {
   new: new Set(["reviewing"]),
@@ -49,7 +50,19 @@ function validateTimestamp(value, fieldName) {
 function validateCreateReport(body) {
   requireObject(body, "Request body");
 
-  const { clientReportId, type, occurredAt, location, description } = body;
+  const {
+    clientReportId,
+    kind = "help",
+    type,
+    occurredAt,
+    location,
+    description,
+    auto = false,
+    injured = null,
+    trapped = null,
+    people = 1,
+    clientUpdateToken,
+  } = body;
 
   if (
     typeof clientReportId !== "string" ||
@@ -59,8 +72,38 @@ function validateCreateReport(body) {
     throw new ValidationError("clientReportId must be a non-empty string up to 128 characters.");
   }
 
-  if (typeof type !== "string" || !REPORT_TYPES.has(type)) {
+  if (typeof kind !== "string" || !REPORT_KINDS.has(kind)) {
+    throw new ValidationError(`kind must be one of: ${[...REPORT_KINDS].join(", ")}.`);
+  }
+
+  if (kind === "help" && (typeof type !== "string" || !REPORT_TYPES.has(type))) {
     throw new ValidationError(`type must be one of: ${[...REPORT_TYPES].join(", ")}.`);
+  }
+
+  if (kind === "safe" && type != null) {
+    throw new ValidationError("type must be omitted or null for a safe report.");
+  }
+
+  if (typeof auto !== "boolean") {
+    throw new ValidationError("auto must be a boolean.");
+  }
+
+  for (const [field, value] of [["injured", injured], ["trapped", trapped]]) {
+    if (value !== null && typeof value !== "boolean") {
+      throw new ValidationError(`${field} must be a boolean or null.`);
+    }
+  }
+
+  if (!Number.isInteger(people) || people < 1 || people > 99) {
+    throw new ValidationError("people must be an integer between 1 and 99.");
+  }
+
+  if (
+    clientUpdateToken !== undefined &&
+    (typeof clientUpdateToken !== "string" ||
+      !/^[a-f\d]{64}$/i.test(clientUpdateToken))
+  ) {
+    throw new ValidationError("clientUpdateToken must be a 64-character hexadecimal token.");
   }
 
   requireObject(location, "location");
@@ -86,11 +129,54 @@ function validateCreateReport(body) {
 
   return {
     clientReportId: clientReportId.trim(),
-    type,
+    kind,
+    type: kind === "safe" ? null : type,
     occurredAt: validateTimestamp(occurredAt, "occurredAt"),
     location: { latitude, longitude },
+    auto,
+    injured,
+    trapped,
+    people,
+    ...(clientUpdateToken === undefined ? {} : { clientUpdateToken }),
     ...(description === undefined ? {} : { description: description.trim() }),
   };
+}
+
+function validateGuestReportDetails(body) {
+  requireObject(body, "Request body");
+
+  const { clientUpdateToken } = body;
+  if (
+    typeof clientUpdateToken !== "string" ||
+    !/^[a-f\d]{64}$/i.test(clientUpdateToken)
+  ) {
+    throw new ValidationError("clientUpdateToken must be a 64-character hexadecimal token.");
+  }
+
+  const updates = {};
+  for (const field of ["injured", "trapped"]) {
+    if (Object.hasOwn(body, field)) {
+      const value = body[field];
+      if (value !== null && typeof value !== "boolean") {
+        throw new ValidationError(`${field} must be a boolean or null.`);
+      }
+      updates[field] = value;
+    }
+  }
+
+  if (Object.hasOwn(body, "people")) {
+    const { people } = body;
+    if (!Number.isInteger(people) || people < 1 || people > 99) {
+      throw new ValidationError("people must be an integer between 1 and 99.");
+    }
+    updates.people = people;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new ValidationError("At least one report detail must be provided.");
+  }
+
+  return { clientUpdateToken, updates };
 }
 
 function parseQueryNumber(value, fieldName, { integer = false } = {}) {
@@ -194,6 +280,7 @@ function validateStatusChange(body, currentStatus) {
 
 module.exports = {
   validateCreateReport,
+  validateGuestReportDetails,
   validateListFilters,
   validateStatusChange,
 };

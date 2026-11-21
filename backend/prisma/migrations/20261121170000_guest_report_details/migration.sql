@@ -1,0 +1,8 @@
+ALTER TABLE "Report"
+  ALTER COLUMN "type" DROP NOT NULL,
+  ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'help',
+  ADD COLUMN "auto" BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN "injured" BOOLEAN,
+  ADD COLUMN "trapped" BOOLEAN,
+  ADD COLUMN "people" INTEGER NOT NULL DEFAULT 1,
+  ADD COLUMN "client_update_token_hash" TEXT;

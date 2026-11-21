@@ -65,6 +65,62 @@ test("report submission validates input and is idempotent", async (t) => {
   assert.equal((await invalidResponse.json()).error.code, "INVALID_REQUEST");
 });
 
+test("safe reports persist and follow-up details require the report token", async (t) => {
+  const baseUrl = await startTestServer(t);
+  const clientUpdateToken = "a".repeat(64);
+  const createResponse = await fetch(`${baseUrl}/api/v1/reports`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(
+      reportPayload({
+        kind: "safe",
+        type: null,
+        clientUpdateToken,
+      }),
+    ),
+  });
+  const created = await createResponse.json();
+
+  assert.equal(createResponse.status, 201);
+  assert.equal(created.data.kind, "safe");
+  assert.equal(created.data.type, null);
+  assert.equal("clientUpdateTokenHash" in created.data, false);
+
+  const unauthorizedUpdate = await fetch(
+    `${baseUrl}/api/v1/reports/${created.data.id}/details`,
+    {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        clientUpdateToken: "b".repeat(64),
+        injured: true,
+      }),
+    },
+  );
+  assert.equal(unauthorizedUpdate.status, 404);
+
+  const updateResponse = await fetch(
+    `${baseUrl}/api/v1/reports/${created.data.id}/details`,
+    {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        clientUpdateToken,
+        injured: true,
+        trapped: false,
+        people: 2,
+      }),
+    },
+  );
+  const updated = await updateResponse.json();
+
+  assert.equal(updateResponse.status, 200);
+  assert.equal(updated.data.injured, true);
+  assert.equal(updated.data.trapped, false);
+  assert.equal(updated.data.people, 2);
+  assert.equal("clientUpdateTokenHash" in updated.data, false);
+});
+
 test("report submission allows ten requests per IP and rejects the eleventh", async (t) => {
   const baseUrl = await startTestServer(t);
 

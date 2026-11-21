@@ -274,6 +274,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Konum veya sunucu bağlantısı başarısız. Bağlantıyı kontrol edip tekrar deneyin.';
 
   @override
+  String get reportSaveFailed =>
+      'Bildirim cihazda kaydedilemedi. Lütfen tekrar deneyin.';
+
+  @override
   String get statusRetry => 'Tekrar dene';
 
   @override

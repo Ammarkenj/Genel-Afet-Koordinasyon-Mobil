@@ -1,5 +1,6 @@
 const {
   validateCreateReport,
+  validateGuestReportDetails,
   validateListFilters,
   validateStatusChange,
 } = require("../validation/reportValidation");
@@ -46,6 +47,22 @@ function createReportsController(reportRepository) {
       const updatedReport = await reportRepository.updateStatus(report.id, status);
 
       return res.json({ data: updatedReport });
+    },
+
+    async updateGuestReportDetails(req, res) {
+      const input = validateGuestReportDetails(req.body);
+      const report = await reportRepository.updateGuestDetails(req.params.id, input);
+
+      if (!report) {
+        return res.status(404).json({
+          error: {
+            code: "REPORT_NOT_FOUND",
+            message: "The requested report was not found.",
+          },
+        });
+      }
+
+      return res.json({ data: report });
     },
   };
 }

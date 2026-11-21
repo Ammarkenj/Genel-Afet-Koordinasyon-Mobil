@@ -33,7 +33,10 @@ class Report {
     this.type,
     this.auto = false,
     this.clientReportId,
+    this.clientUpdateToken,
     this.serverReportId,
+    this.detailsRevision = 0,
+    this.syncedDetailsRevision = 0,
     this.latitude,
     this.longitude,
     this.canUndo = true,
@@ -49,7 +52,10 @@ class Report {
   final DateTime occurredAt;
   final bool auto;
   final String? clientReportId;
+  String? clientUpdateToken;
   String? serverReportId;
+  int detailsRevision;
+  int syncedDetailsRevision;
   double? latitude;
   double? longitude;
   bool canUndo;
@@ -60,6 +66,93 @@ class Report {
   bool? injured;
   bool? trapped;
   int people;
+}
+
+class Shelter {
+  const Shelter({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.latitude,
+    required this.longitude,
+    this.capacity,
+    this.features,
+  });
+
+  final String id;
+  final String name;
+  final String category;
+  final int? capacity;
+  final double latitude;
+  final double longitude;
+  final String? features;
+
+  factory Shelter.fromApiJson(Map<String, dynamic> json) => Shelter(
+    id: _catalogString(json['id'], 'id'),
+    name: _catalogString(json['name'], 'name'),
+    category: _catalogString(json['category'], 'category'),
+    capacity: _catalogInt(json['capacity'], 'capacity'),
+    latitude: _catalogDouble(json['latitude'], 'latitude'),
+    longitude: _catalogDouble(json['longitude'], 'longitude'),
+    features: _catalogOptionalString(json['features'], 'features'),
+  );
+
+  factory Shelter.fromDatabase(Map<String, Object?> row) => Shelter(
+    id: _catalogString(row['id'], 'id'),
+    name: _catalogString(row['name'], 'name'),
+    category: _catalogString(row['category'], 'category'),
+    capacity: _catalogInt(row['capacity'], 'capacity'),
+    latitude: _catalogDouble(row['latitude'], 'latitude'),
+    longitude: _catalogDouble(row['longitude'], 'longitude'),
+    features: _catalogOptionalString(row['features'], 'features'),
+  );
+
+  Map<String, Object?> toDatabase() => {
+    'id': id,
+    'name': name,
+    'category': category,
+    'capacity': capacity,
+    'latitude': latitude,
+    'longitude': longitude,
+    'features': features,
+  };
+}
+
+class EmergencyGuide {
+  const EmergencyGuide({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.content,
+  });
+
+  final String id;
+  final String title;
+  final String category;
+  final String content;
+
+  factory EmergencyGuide.fromApiJson(Map<String, dynamic> json) =>
+      EmergencyGuide(
+        id: _catalogString(json['id'], 'id'),
+        title: _catalogString(json['title'], 'title'),
+        category: _catalogString(json['category'], 'category'),
+        content: _catalogString(json['content'], 'content'),
+      );
+
+  factory EmergencyGuide.fromDatabase(Map<String, Object?> row) =>
+      EmergencyGuide(
+        id: _catalogString(row['id'], 'id'),
+        title: _catalogString(row['title'], 'title'),
+        category: _catalogString(row['category'], 'category'),
+        content: _catalogString(row['content'], 'content'),
+      );
+
+  Map<String, Object?> toDatabase() => {
+    'id': id,
+    'title': title,
+    'category': category,
+    'content': content,
+  };
 }
 
 class VolunteerNeed {
@@ -100,4 +193,25 @@ class AssemblyArea {
   final int number;
   final int meters;
   final int minutes;
+}
+
+String _catalogString(Object? value, String field) {
+  if (value is String) return value;
+  throw FormatException('Catalog field "$field" must be a string.');
+}
+
+String? _catalogOptionalString(Object? value, String field) {
+  if (value == null || value is String) return value as String?;
+  throw FormatException('Catalog field "$field" must be a string or null.');
+}
+
+int? _catalogInt(Object? value, String field) {
+  if (value == null) return null;
+  if (value is int) return value;
+  throw FormatException('Catalog field "$field" must be an integer or null.');
+}
+
+double _catalogDouble(Object? value, String field) {
+  if (value is num) return value.toDouble();
+  throw FormatException('Catalog field "$field" must be numeric.');
 }

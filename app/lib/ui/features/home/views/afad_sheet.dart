@@ -47,9 +47,14 @@ Future<void> showAfadSheet(BuildContext context) {
                 icon: AppIconName.shieldCheck,
                 variant: AppButtonVariant.safe,
                 size: AppButtonSize.xl,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(ctx).pop();
-                  reports.sendSafe();
+                  final report = await reports.sendSafe();
+                  if (!context.mounted) return;
+                  if (report == null) {
+                    showToast(context, l.reportSaveFailed);
+                    return;
+                  }
                   router.go('/status');
                 },
               ),
@@ -58,9 +63,14 @@ Future<void> showAfadSheet(BuildContext context) {
                 icon: AppIconName.lifebuoy,
                 variant: AppButtonVariant.danger,
                 size: AppButtonSize.xl,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(ctx).pop();
-                  reports.sendHelp(IncidentType.quake);
+                  final report = await reports.sendHelp(IncidentType.quake);
+                  if (!context.mounted) return;
+                  if (report == null) {
+                    showToast(context, l.reportSaveFailed);
+                    return;
+                  }
                   router.go('/status');
                 },
               ),

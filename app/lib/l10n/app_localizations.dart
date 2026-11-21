@@ -590,6 +590,12 @@ abstract class AppLocalizations {
   /// **'Konum veya sunucu bağlantısı başarısız. Bağlantıyı kontrol edip tekrar deneyin.'**
   String get statusFailedDesc;
 
+  /// No description provided for @reportSaveFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim cihazda kaydedilemedi. Lütfen tekrar deneyin.'**
+  String get reportSaveFailed;
+
   /// No description provided for @statusRetry.
   ///
   /// In tr, this message translates to:
