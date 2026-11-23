@@ -10,11 +10,12 @@ datasource db {
 model User {
   user_id           String             @id @default(uuid())
   national_id       String?
-  full_name         String
-  phone_number      String
+  full_name         String?
+  phone_number      String             @unique
   blood_type        String?
   created_at        DateTime           @default(now())
 
+  auth_sessions     AuthSession[]
   volunteers        Volunteer[]
   family_owned      FamilyGroup[]      @relation("GroupOwner")
   family_members    FamilyGroup[]      @relation("GroupMember")
@@ -25,9 +26,33 @@ model User {
   sensor_logs       SensorTriggerLog[]
 }
 
+model AuthOtpChallenge {
+  challenge_id  String   @id @default(uuid())
+  phone_number  String
+  code_hash     String
+  expires_at    DateTime
+  attempt_count Int      @default(0)
+  consumed_at   DateTime?
+  created_at    DateTime @default(now())
+
+  @@index([phone_number, created_at])
+}
+
+model AuthSession {
+  session_id String   @id @default(uuid())
+  user_id    String
+  token_hash String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id, expires_at])
+}
+
 model Volunteer {
   volunteer_id         String                 @id @default(uuid())
-  user_id              String
+  user_id              String                 @unique
   role_type            String
   certification_status String?
   current_latitude     Float?
@@ -75,11 +100,16 @@ model DisasterEvent {
 model VolunteerAssignment {
   assignment_id String        @id @default(uuid())
   volunteer_id  String
-  event_id      String
+  event_id      String?
+  need_id       String?        @unique
   assigned_at   DateTime      @default(now())
+  completed_at  DateTime?
 
   volunteer     Volunteer     @relation(fields: [volunteer_id], references: [volunteer_id])
-  event         DisasterEvent @relation(fields: [event_id], references: [event_id])
+  event         DisasterEvent? @relation(fields: [event_id], references: [event_id])
+  need          Need?          @relation(fields: [need_id], references: [need_id], onDelete: Restrict)
+
+  @@index([volunteer_id, completed_at])
 }
 
 model Report {
@@ -119,6 +149,7 @@ model Need {
   is_fulfilled  Boolean  @default(false)
 
   report        Report   @relation(fields: [report_id], references: [report_id])
+  assignments   VolunteerAssignment[]
 }
 
 model EmergencyContact {

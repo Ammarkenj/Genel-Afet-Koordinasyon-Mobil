@@ -13,6 +13,12 @@ npm test
 
 Sunucu varsayılan olarak `0.0.0.0:3000` adresinde çalışır. `PORT` ve `HOST` ortam değişkenleriyle adres değiştirilebilir.
 
+Tarayıcıdan yerel Flutter uygulamasına API erişimi için `.env` dosyasına
+`WEB_ALLOWED_ORIGINS=http://localhost:5000` ekleyin. CORS yalnızca bu virgülle
+ayrılmış tam origin listesine izin verir; varsayılan olarak hiçbir tarayıcı origin'i
+izinli değildir. Android/iOS istemcileri `Origin` göndermediğinden bu ayardan
+etkilenmez.
+
 ## API
 
 ### `GET /api/v1/health`
@@ -71,6 +77,31 @@ geçişler `400` döndürür. Token'ı kaynak koduna veya Git'e eklemeyin. Bu pa
 MVP token'ını yalnızca TLS arkasında kullanın; personel bazlı hesap/rol sistemi
 henüz yoktur.
 
+### Telefonla kullanıcı doğrulama (altyapı)
+
+`POST /api/v1/auth/otp/request` Türk telefon numarasını doğrular ve SMS sağlayıcısı
+yapılandırıldığında tek kullanımlık kod gönderir. Gövde:
+
+```json
+{ "phoneNumber": "0532 111 22 33" }
+```
+
+Kod doğrulama uç noktası `POST /api/v1/auth/otp/verify` aynı telefon numarası,
+`challengeId` ve altı haneli `code` alır. Başarılı doğrulama 30 gün geçerli bearer
+oturumu döndürür; `GET /api/v1/auth/me` oturumu doğrular ve
+`POST /api/v1/auth/logout` oturumu iptal eder. Kodlar 5 dakika geçerlidir ve
+challenge başına en fazla 5 deneme yapılabilir. Doğrulama kodları veritabanında
+`AUTH_OTP_PEPPER` ile HMAC özeti olarak, oturum token'ları ise yalnızca SHA-256
+özeti olarak saklanır. `AUTH_OTP_PEPPER` en az 32 karakterlik gizli bir değer
+olmalıdır.
+
+SMS sağlayıcısı henüz seçilmediğinden production sunucusunda OTP gönderimi
+bilerek etkin değildir; `/otp/request` `503 OTP_DELIVERY_UNAVAILABLE` döndürür
+ve doğrulama kodu kaydetmez. Gerçek SMS sağlayıcısı yapılandırılmadan telefonla
+giriş tamamlanamaz. Kod isteği IP başına 15 dakikada 5, numara başına 3; kod
+doğrulama IP başına 15 dakikada 10 istekle sınırlandırılır. Oturum token'larını
+yalnızca TLS üzerinden gönderin.
+
 ## Veritabanı
 
 PostgreSQL bağlantısını `backend/.env` içindeki `DATABASE_URL` değişkeniyle yapılandırın. Bu dosya Git tarafından yok sayılır; bağlantı bilgisini depoya eklemeyin.
@@ -80,6 +111,9 @@ PostgreSQL bağlantısını `backend/.env` içindeki `DATABASE_URL` değişkeniy
 ```powershell
 npm run db:migrate
 ```
+
+Telefon doğrulama tablolarını ekleyen `20261123171000_phone_otp_sessions`
+migration'ı henüz veritabanına uygulanmadı.
 
 Sabit acil durum rehberlerini ve barınak örneklerini eklemek için:
 

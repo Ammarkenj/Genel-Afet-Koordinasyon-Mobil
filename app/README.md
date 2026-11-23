@@ -1,10 +1,13 @@
 # YaşamHattı (Flutter)
 
 The phone UI is built from the HTML prototype in `../prototype` (design rules:
-`../design-system/yasamhatti/MASTER.md`). Guest emergency reports and the shelter catalog use the backend
-API; shelter data is cached locally for offline viewing. The map drawing is still illustrative and does
-not show geographic tiles or routes. Wear OS watch, real sensors, persistent offline report storage, SMS
-and payments are not built yet.
+`../design-system/yasamhatti/MASTER.md`). Guest emergency reports, shelters and emergency guides use the
+backend API; catalog data is cached locally for offline viewing. The map drawing is still illustrative
+and does not show geographic tiles or routes. Wear OS watch, real sensors, persistent offline report
+storage, real SMS delivery and payments are not built yet. Phone login uses the auth API; sending codes
+requires an SMS provider to be configured on the backend. Volunteer profiles and
+assignments use authenticated API endpoints and real, unfulfilled need records;
+they require a valid phone-login session and an online connection.
 
 ## Structure (MVVM, `ChangeNotifier` + `provider`, `go_router`)
 
@@ -31,6 +34,12 @@ For the Android emulator, start the backend from `../backend` with `npm start`, 
 
 ```
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
+```
+
+For Chrome, configure `WEB_ALLOWED_ORIGINS=http://localhost:5000` in the backend's `.env`, then run:
+
+```
+flutter run -d chrome --web-port=5000 --dart-define=API_BASE_URL=http://localhost:3000
 ```
 
 Guest reports request the device's current location and send the incident type, UTC time and coordinates

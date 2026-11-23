@@ -11,8 +11,9 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/layout.dart';
 import '../../../core/widgets/parts.dart';
 import '../view_models/volunteer_view_model.dart';
+import 'volunteer_error_notice.dart';
 
-/// Accepted task (VolunteerAssignments). Offline it is saved on the device as "Bekliyor" and sent later.
+/// Accepted task (VolunteerAssignments). Only the demo repository queues tasks offline.
 /// Completing it cannot be undone, so it asks first; the safe answer comes first.
 class VolunteerTaskView extends StatelessWidget {
   const VolunteerTaskView({super.key});
@@ -29,6 +30,8 @@ class VolunteerTaskView extends StatelessWidget {
             title: l.screenVolTask,
             onBack: () => context.go('/vol'),
           ),
+          if (vm.errorCode != null)
+            VolunteerErrorNotice(code: vm.errorCode!, onRetry: vm.load),
           Text(l.volNoTask, style: Theme.of(context).textTheme.bodyLarge),
           AppButton(label: l.volHubBack, onPressed: () => context.go('/vol')),
         ],
@@ -45,6 +48,8 @@ class VolunteerTaskView extends StatelessWidget {
           };
     return ScreenBody(
       children: [
+        if (vm.errorCode != null)
+          VolunteerErrorNotice(code: vm.errorCode!, onRetry: vm.load),
         ResultHeader(
           tone: task.done ? Tone.ok : style.tone,
           icon: task.done ? AppIconName.checkCircle : style.icon,
@@ -54,7 +59,7 @@ class VolunteerTaskView extends StatelessWidget {
         KvCard(
           rows: [
             (l.volNeedType, KvText(l.needName(task.need))),
-            (l.volEvent, KvText(l.volEventName)),
+            (l.volEvent, KvText(l.volunteerEventName(task.eventTitle))),
             (l.volAssigned, KvText(task.time, ltr: true)),
             (
               l.statusDelivery,
@@ -87,14 +92,15 @@ class VolunteerTaskView extends StatelessWidget {
             AppButton(
               label: l.volRoute,
               icon: AppIconName.route,
-              onPressed: () => context.go('/map'),
+              onPressed: vm.busy ? null : () => context.go('/map'),
             ),
             if (!task.done)
               AppButton(
                 label: l.volComplete,
                 icon: AppIconName.check,
                 variant: AppButtonVariant.outline,
-                onPressed: () => _confirmDone(context),
+                busy: vm.busy,
+                onPressed: vm.busy ? null : () => _confirmDone(context),
               ),
             AppButton(
               label: l.volHubBack,

@@ -528,6 +528,7 @@ class SwitchRow extends StatelessWidget {
     required this.value,
     required this.stateLabel,
     required this.onChanged,
+    this.enabled = true,
   });
 
   final String title;
@@ -535,16 +536,18 @@ class SwitchRow extends StatelessWidget {
   final bool value;
   final String stateLabel;
   final ValueChanged<bool> onChanged;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     return Semantics(
       toggled: value,
+      enabled: enabled,
       label: title,
       hint: description,
       child: InkWell(
-        onTap: () => onChanged(!value),
+        onTap: enabled ? () => onChanged(!value) : null,
         borderRadius: BorderRadius.circular(Radii.sm),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: Tap.control),
@@ -877,6 +880,7 @@ class LabeledField extends StatelessWidget {
     this.onChanged,
     this.onSubmitted,
     this.fieldKey,
+    this.readOnly = false,
   });
 
   final String label;
@@ -889,6 +893,7 @@ class LabeledField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final Key? fieldKey;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -904,6 +909,7 @@ class LabeledField extends StatelessWidget {
       maxLength: maxLength,
       onChanged: onChanged,
       onSubmitted: onSubmitted,
+      readOnly: readOnly,
       style: context.bodyLg,
       textDirection: TextDirection.ltr,
       decoration: InputDecoration(

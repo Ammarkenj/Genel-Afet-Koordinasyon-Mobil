@@ -31,9 +31,18 @@ class VolunteerEntryRow extends StatelessWidget {
           title: vm.joined ? l.volEntryHub : l.volEntryJoin,
           subtitle: l.volEntrySub,
           chevron: true,
-          onTap: () {
+          onTap: () async {
+            if (vm.busy) return;
             vm.origin = GoRouterState.of(context).uri.path;
-            context.push(vm.joined ? '/vol' : '/vol/join');
+            await vm.load();
+            if (!context.mounted) return;
+            if (vm.errorCode == 'AUTHENTICATION_REQUIRED') {
+              context.push('/login');
+            } else if (vm.errorCode != null || vm.joined) {
+              context.push('/vol');
+            } else {
+              context.push('/vol/join');
+            }
           },
         ),
       ],

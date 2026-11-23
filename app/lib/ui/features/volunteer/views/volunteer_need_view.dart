@@ -12,6 +12,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/layout.dart';
 import '../../../core/widgets/parts.dart';
 import '../view_models/volunteer_view_model.dart';
+import 'volunteer_error_notice.dart';
 
 /// One need: event, urgency, distance and the single primary action "Görevi kabul et".
 /// While another task is active the button is disabled and the reason is written above it.
@@ -24,6 +25,17 @@ class VolunteerNeedView extends StatelessWidget {
     final vm = context.watch<VolunteerViewModel>();
     final n = vm.needDetail;
     final c = context.colors;
+    if (n == null) {
+      return ScreenBody(
+        children: [
+          ScreenHeader(title: l.volNeedTitle, onBack: () => context.go('/vol')),
+          if (vm.errorCode != null)
+            VolunteerErrorNotice(code: vm.errorCode!, onRetry: vm.load),
+          NoteLine(icon: AppIconName.info, text: l.volNeedUnavailable),
+          AppButton(label: l.volBack, onPressed: () => context.go('/vol')),
+        ],
+      );
+    }
     return ScreenBody(
       children: [
         ScreenHeader(title: l.volNeedTitle, onBack: () => context.go('/vol')),
@@ -32,10 +44,11 @@ class VolunteerNeedView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: Sp.s2,
             children: [
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: AppTag(l.commonSample),
-              ),
+              if (vm.isDemo)
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: AppTag(l.commonSample),
+                ),
               Row(
                 spacing: Sp.s2,
                 children: [
@@ -43,20 +56,22 @@ class VolunteerNeedView extends StatelessWidget {
                   Expanded(child: Text(l.needName(n.id), style: context.title)),
                 ],
               ),
-              Text(l.needDesc(n.id), style: context.bodyLg),
+              Text(l.volunteerNeedDescription(n), style: context.bodyLg),
             ],
           ),
         ),
         KvCard(
           rows: [
-            (l.volEvent, KvText(l.volEventName)),
+            (l.volEvent, KvText(l.volunteerEventName(n.eventTitle))),
             (
               l.volUrgency,
               UrgencyLabel(level: n.urgency, text: l.urgency(n.urgency)),
             ),
-            (l.volDistance, KvText(l.needDist(n.id))),
+            (l.volDistance, KvText(l.needDistance(n))),
           ],
         ),
+        if (vm.errorCode != null)
+          VolunteerErrorNotice(code: vm.errorCode!, onRetry: vm.load),
         if (vm.busyWithOther) NoteLine(icon: AppIconName.info, text: l.volBusy),
       ],
       pinned: [
@@ -72,11 +87,15 @@ class VolunteerNeedView extends StatelessWidget {
             label: l.volAccept,
             icon: AppIconName.checkCircle,
             size: AppButtonSize.xl,
+            busy: vm.busy,
             onPressed: vm.busyWithOther
                 ? null
-                : () {
-                    vm.accept();
-                    context.pushReplacement('/vol/task');
+                : vm.busy
+                ? null
+                : () async {
+                    if (await vm.accept() && context.mounted) {
+                      context.pushReplacement('/vol/task');
+                    }
                   },
           ),
         AppButton(

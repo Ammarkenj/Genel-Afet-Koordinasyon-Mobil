@@ -3,7 +3,9 @@ require("dotenv").config({ path: require("node:path").resolve(__dirname, "..", "
 const { PrismaClient } = require("@prisma/client");
 const { createApp } = require("./app");
 const { PrismaCatalogRepository } = require("./repositories/prismaCatalogRepository");
+const { PrismaAuthRepository } = require("./repositories/prismaAuthRepository");
 const { PrismaReportRepository } = require("./repositories/prismaReportRepository");
+const { PrismaVolunteerRepository } = require("./repositories/prismaVolunteerRepository");
 
 async function startServer() {
   const port = Number(process.env.PORT || 3000);
@@ -22,7 +24,10 @@ async function startServer() {
 
   const server = createApp({
     catalogRepository: new PrismaCatalogRepository(prisma),
+    authRepository: new PrismaAuthRepository(prisma),
+    volunteerRepository: new PrismaVolunteerRepository(prisma),
     reportRepository: new PrismaReportRepository(prisma),
+    otpPepper: process.env.AUTH_OTP_PEPPER,
     databaseClient: prisma,
     staffApiToken: process.env.STAFF_API_TOKEN,
   }).listen(port, host, () => {

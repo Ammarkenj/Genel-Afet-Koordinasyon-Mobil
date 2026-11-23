@@ -101,10 +101,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginCode => 'رمز التحقق (6 أرقام)';
 
   @override
-  String get loginCodeHint => 'أُرسل عبر SMS. في النموذج يُقبل أي 6 أرقام.';
+  String get loginCodeHint =>
+      'أدخل الرمز المكوّن من 6 أرقام الذي وصلك عبر SMS.';
 
   @override
   String get loginCodeError => 'الرمز يجب أن يكون 6 أرقام.';
+
+  @override
+  String get loginCodeInvalid => 'الرمز غير صحيح أو انتهت صلاحيته.';
+
+  @override
+  String get loginUnavailable =>
+      'التحقق عبر SMS غير متاح حالياً. يُرجى المحاولة لاحقاً.';
+
+  @override
+  String get loginRateLimited =>
+      'عدد المحاولات كبير جداً. حاول مرة أخرى بعد قليل.';
+
+  @override
+  String get loginConnectionError =>
+      'تعذّر الاتصال بالخادم. تحقق من اتصالك وحاول مجدداً.';
+
+  @override
+  String get loginServerError => 'تعذّر إكمال العملية. يُرجى المحاولة مجدداً.';
 
   @override
   String get loginSubmit => 'دخول';
@@ -485,6 +504,47 @@ class AppLocalizationsAr extends AppLocalizations {
   String get toolsStop => 'إيقاف';
 
   @override
+  String get guidesTitle => 'أدلة الطوارئ';
+
+  @override
+  String get guidesEntryTitle => 'أدلة الطوارئ';
+
+  @override
+  String get guidesEntrySubtitle => 'إرشادات قبل الكوارث وأثناءها';
+
+  @override
+  String get guidesOfflineNote =>
+      'يمكن فتح الأدلة المحفوظة دون اتصال بالإنترنت.';
+
+  @override
+  String get guidesRefresh => 'تحديث الأدلة';
+
+  @override
+  String get guidesList => 'قائمة الأدلة';
+
+  @override
+  String get guidesOffline => 'غير متصل';
+
+  @override
+  String get guidesOnline => 'متصل';
+
+  @override
+  String get guidesSyncing => 'جارٍ تحديث الأدلة';
+
+  @override
+  String get guidesStale => 'تعذّر تحديث قائمة الأدلة';
+
+  @override
+  String get guidesLoading => 'جارٍ تحميل الأدلة…';
+
+  @override
+  String get guidesEmpty => 'لا توجد أدلة طوارئ بعد.';
+
+  @override
+  String get guidesLoadFailed =>
+      'تعذّر تحديث الأدلة. تحقق من الاتصال وحاول مجدداً.';
+
+  @override
   String get toolsSmsTitle => 'بلاغ عبر SMS';
 
   @override
@@ -660,6 +720,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileLogout => 'تسجيل الخروج';
 
   @override
+  String get profileLogoutServerWarning =>
+      'تم تسجيل الخروج من هذا الجهاز، لكن تعذّر إنهاء جلسة الخادم.';
+
+  @override
+  String get profileLogoutStorageError =>
+      'تعذّر مسح الجلسة من هذا الجهاز. يُرجى المحاولة مجدداً.';
+
+  @override
   String get volSection => 'التطوع';
 
   @override
@@ -743,11 +811,62 @@ class AppLocalizationsAr extends AppLocalizations {
       'أنت غير متاح. فعّل «أنا متاح» لترى قائمة الاحتياجات.';
 
   @override
+  String get volLoginRequired => 'يجب تسجيل الدخول لاستخدام خدمات التطوع.';
+
+  @override
+  String get volLoginAction => 'تسجيل الدخول';
+
+  @override
+  String get volRegistrationMissing =>
+      'أكمل تسجيلك كمتطوع أولاً لاستخدام اللوحة.';
+
+  @override
+  String get volConnectionError =>
+      'تعذّر الاتصال بالخادم. تحقق من الإنترنت وحاول مجدداً.';
+
+  @override
+  String get volServerError =>
+      'تعذّر إكمال إجراء التطوع. يُرجى المحاولة مجدداً.';
+
+  @override
+  String get volNeedUnavailable =>
+      'لم تعد هذه الحاجة مفتوحة. حدّث القائمة واختر حاجة أخرى.';
+
+  @override
+  String get volErrorTitle => 'تعذّر إكمال العملية';
+
+  @override
+  String get volRetry => 'إعادة المحاولة';
+
+  @override
+  String get volLoading => 'جارٍ تحميل بيانات المتطوع…';
+
+  @override
+  String get volNeedsEmpty => 'لا توجد احتياجات مفتوحة حالياً.';
+
+  @override
+  String get volDistanceUnknown => 'المسافة غير متاحة';
+
+  @override
+  String volDistanceMeters(int distance) {
+    return '$distance م';
+  }
+
+  @override
+  String volDistanceKilometers(String distance) {
+    return '$distance كم';
+  }
+
+  @override
   String get volActiveTask => 'مهمتك الحالية';
 
   @override
   String get volOfflineDesc =>
-      'تُعرض آخر الاحتياجات المطابقة. المهمة التي تقبلها تُحفظ في الجهاز وتُرسل عند عودة الاتصال.';
+      'قد تبقى البيانات التي حُمّلت سابقاً ظاهرة. يلزم الإنترنت للاحتياجات الحالية وإجراءات التطوع؛ ولا تُضاف العمليات إلى قائمة إرسال دون اتصال.';
+
+  @override
+  String get volOfflineDemoDesc =>
+      'تبقى المهام التجريبية على الجهاز وتُحدّث عند عودة الاتصال؛ هذه البيانات ليست من الخادم.';
 
   @override
   String get volTaskWaiting => 'قبول مهمة في الانتظار: 1';
@@ -791,6 +910,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get needShelterDist => '1.2 كم';
+
+  @override
+  String get needOther => 'احتياج آخر';
+
+  @override
+  String get needOtherDesc => 'وصف الاحتياج';
 
   @override
   String get volNeedTitle => 'تفاصيل الاحتياج';

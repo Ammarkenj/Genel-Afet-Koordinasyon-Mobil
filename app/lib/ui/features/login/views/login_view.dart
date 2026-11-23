@@ -45,13 +45,22 @@ class _LoginViewState extends State<LoginView> {
     final first = vm.step == 1;
     if (first && _code.text.isNotEmpty) _code.clear();
 
-    void submit() {
+    Future<void> submit() async {
+      if (vm.busy) return;
       if (first) {
-        vm.sendCode();
-      } else if (vm.submitCode()) {
+        await vm.sendCode();
+      } else if (await vm.submitCode() && context.mounted) {
         context.go('/home');
       }
     }
+
+    final remoteError = switch (vm.error) {
+      LoginError.unavailable => l.loginUnavailable,
+      LoginError.rateLimited => l.loginRateLimited,
+      LoginError.connection => l.loginConnectionError,
+      LoginError.server => l.loginServerError,
+      _ => null,
+    };
 
     return AppScaffold(
       body: ScreenBody(
@@ -74,6 +83,7 @@ class _LoginViewState extends State<LoginView> {
               maxLength: 13,
               keyboardType: TextInputType.phone,
               hint: l.loginPhoneHint,
+              readOnly: vm.busy,
               error: vm.error == LoginError.phone ? l.loginPhoneError : null,
               onChanged: vm.setPhone,
               onSubmitted: (_) => submit(),
@@ -84,19 +94,31 @@ class _LoginViewState extends State<LoginView> {
               controller: _code,
               maxLength: 6,
               hint: l.loginCodeHint,
-              error: vm.error == LoginError.code ? l.loginCodeError : null,
+              readOnly: vm.busy,
+              error: switch (vm.error) {
+                LoginError.code => l.loginCodeError,
+                LoginError.codeInvalid => l.loginCodeInvalid,
+                _ => null,
+              },
               onChanged: vm.setCode,
               onSubmitted: (_) => submit(),
+            ),
+          if (remoteError != null)
+            AppBanner(
+              tone: Tone.warn,
+              icon: AppIconName.info,
+              body: remoteError,
             ),
           AppButton(
             label: first ? l.loginSendCode : l.loginSubmit,
             onPressed: submit,
+            busy: vm.busy,
           ),
           if (!first)
             AppButton(
               label: l.loginChangeNumber,
               variant: AppButtonVariant.ghost,
-              onPressed: vm.changeNumber,
+              onPressed: vm.busy ? null : vm.changeNumber,
             ),
         ],
         pinned: [

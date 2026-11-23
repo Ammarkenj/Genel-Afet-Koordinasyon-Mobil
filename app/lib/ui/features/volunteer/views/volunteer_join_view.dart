@@ -12,6 +12,7 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/layout.dart';
 import '../../../core/widgets/parts.dart';
 import '../view_models/volunteer_view_model.dart';
+import 'volunteer_error_notice.dart';
 
 /// Volunteer sign-up: role (role_type), certificate (certification_status), location-sharing note.
 class VolunteerJoinView extends StatelessWidget {
@@ -27,6 +28,8 @@ class VolunteerJoinView extends StatelessWidget {
           title: l.volJoinTitle,
           onBack: () => context.go(vm.origin),
         ),
+        if (vm.errorCode != null)
+          VolunteerErrorNotice(code: vm.errorCode!, onRetry: vm.load),
         Text(l.volJoinLead, style: context.bodyLg),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -55,11 +58,15 @@ class VolunteerJoinView extends StatelessWidget {
           label: l.volJoinBtn,
           icon: AppIconName.users,
           size: AppButtonSize.xl,
-          onPressed: () {
-            vm.register();
-            context.pushReplacement('/vol');
-            showToast(context, l.toastVolJoined);
-          },
+          busy: vm.busy,
+          onPressed: vm.busy
+              ? null
+              : () async {
+                  final registered = await vm.register();
+                  if (!context.mounted || !registered) return;
+                  context.pushReplacement('/vol');
+                  showToast(context, l.toastVolJoined);
+                },
         ),
       ],
     );

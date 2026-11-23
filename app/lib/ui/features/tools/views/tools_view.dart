@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../l10n/app_localizations.dart';
@@ -66,6 +67,13 @@ class ToolsView extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        ListRowButton(
+          leading: const AppIcon(AppIconName.clipboard),
+          title: l.guidesEntryTitle,
+          subtitle: l.guidesEntrySubtitle,
+          chevron: true,
+          onTap: () => context.go('/tools/guides'),
         ),
       ],
     );
