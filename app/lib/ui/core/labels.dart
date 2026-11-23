@@ -63,18 +63,51 @@ extension AppLabels on AppLocalizations {
     NeedId.aid => needAid,
     NeedId.water => needWater,
     NeedId.shelter => needShelter,
+    NeedId.other => needOther,
   };
 
   String needDesc(NeedId n) => switch (n) {
     NeedId.aid => needAidDesc,
     NeedId.water => needWaterDesc,
     NeedId.shelter => needShelterDesc,
+    NeedId.other => needOtherDesc,
   };
+
+  String volunteerNeedDescription(VolunteerNeed need) {
+    final description = need.description?.trim();
+    return description == null || description.isEmpty
+        ? needDesc(need.id)
+        : description;
+  }
+
+  String volunteerEventName(String? title) {
+    final eventTitle = title?.trim();
+    return eventTitle == null || eventTitle.isEmpty ? volEventName : eventTitle;
+  }
 
   String needDist(NeedId n) => switch (n) {
     NeedId.aid => needAidDist,
     NeedId.water => needWaterDist,
     NeedId.shelter => needShelterDist,
+    NeedId.other => volDistanceUnknown,
+  };
+
+  String needDistance(VolunteerNeed need) {
+    final meters = need.meters;
+    if (meters == null) return volDistanceUnknown;
+    if (meters < 1000) return volDistanceMeters(meters);
+    return volDistanceKilometers((meters / 1000).toStringAsFixed(1));
+  }
+
+  String? volunteerError(String? code) => switch (code) {
+    null => null,
+    'AUTHENTICATION_REQUIRED' => volLoginRequired,
+    'VOLUNTEER_NOT_REGISTERED' => volRegistrationMissing,
+    'VOLUNTEER_UNAVAILABLE' => volUnavailable,
+    'ACTIVE_TASK_EXISTS' => volBusy,
+    'NEED_UNAVAILABLE' || 'INVALID_NEED_ID' => volNeedUnavailable,
+    'CONNECTION_FAILED' => volConnectionError,
+    _ => volServerError,
   };
 
   String urgency(int level) => switch (level) {
@@ -102,6 +135,7 @@ AppIconName needIcon(NeedId n) => switch (n) {
   NeedId.aid => AppIconName.firstAid,
   NeedId.water => AppIconName.drop,
   NeedId.shelter => AppIconName.tent,
+  NeedId.other => AppIconName.box,
 };
 
 AppIconName networkIcon(NetworkStatus n) => switch (n) {

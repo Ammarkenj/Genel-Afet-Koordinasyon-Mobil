@@ -1,19 +1,75 @@
 const express = require("express");
+const authRoutes = require("./routes/authRoutes");
 const catalogRoutes = require("./routes/catalogRoutes");
 const healthRoutes = require("./routes/healthRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const volunteerRoutes = require("./routes/volunteerRoutes");
+const { InMemoryAuthRepository } = require("./repositories/inMemoryAuthRepository");
+const { InMemoryVolunteerRepository } = require("./repositories/inMemoryVolunteerRepository");
 
 function createApp({
   catalogRepository,
   reportRepository,
+  authRepository,
+  volunteerRepository,
+  smsSender,
+  otpPepper,
   databaseClient,
   staffApiToken,
+  webAllowedOrigins = process.env.WEB_ALLOWED_ORIGINS || "",
 } = {}) {
   const app = express();
+  const effectiveAuthRepository =
+    authRepository ?? new InMemoryAuthRepository();
+  const effectiveVolunteerRepository =
+    volunteerRepository ?? new InMemoryVolunteerRepository();
+  const allowedOrigins = new Set(
+    webAllowedOrigins
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  );
 
   app.disable("x-powered-by");
+  app.use((req, res, next) => {
+    const origin = req.get("origin");
+    if (!origin) return next();
+    if (!allowedOrigins.has(origin)) {
+      return res.status(403).json({
+        error: {
+          code: "ORIGIN_NOT_ALLOWED",
+          message: "The request origin is not allowed.",
+        },
+      });
+    }
+
+    res.set("Access-Control-Allow-Origin", origin);
+    res.vary("Origin");
+    if (req.method === "OPTIONS") {
+      res.set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+      res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      res.set("Access-Control-Max-Age", "600");
+      return res.sendStatus(204);
+    }
+    next();
+  });
   app.use(express.json({ limit: "32kb" }));
   app.use("/api/v1/health", healthRoutes({ databaseClient }));
+  app.use(
+    "/api/v1/auth",
+    authRoutes({
+      authRepository: effectiveAuthRepository,
+      smsSender,
+      otpPepper,
+    }),
+  );
+  app.use(
+    "/api/v1/volunteers",
+    volunteerRoutes({
+      authRepository: effectiveAuthRepository,
+      volunteerRepository: effectiveVolunteerRepository,
+    }),
+  );
   app.use("/api/v1", catalogRoutes({ catalogRepository }));
   app.use(
     "/api/v1/reports",
@@ -55,7 +111,7 @@ function createApp({
     if (error.status && error.status < 500) {
       return res.status(error.status).json({
         error: {
-          code: "INVALID_REQUEST",
+          code: error.code ?? "INVALID_REQUEST",
           message: error.message,
         },
       });

@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'data/local/daos/report_dao.dart';
+import 'data/repositories/api_auth_repository.dart';
+import 'data/repositories/auth_repository.dart';
 import 'data/repositories/api_reports_repository.dart';
+import 'data/repositories/api_volunteer_repository.dart';
 import 'data/repositories/catalog_repository.dart';
 import 'data/repositories/connectivity_repository.dart';
 import 'data/repositories/reports_repository.dart';
@@ -16,6 +19,7 @@ import 'ui/core/theme/app_theme.dart';
 import 'ui/core/widgets/bottom_nav.dart';
 import 'ui/features/donate/view_models/donate_view_model.dart';
 import 'ui/features/donate/views/donate_view.dart';
+import 'ui/features/guides/views/guides_view.dart';
 import 'ui/features/home/views/home_view.dart';
 import 'ui/features/login/view_models/login_view_model.dart';
 import 'ui/features/login/views/login_view.dart';
@@ -38,16 +42,20 @@ import 'ui/features/volunteer/views/volunteer_join_view.dart';
 import 'ui/features/volunteer/views/volunteer_need_view.dart';
 import 'ui/features/volunteer/views/volunteer_task_view.dart';
 
-/// The repositories behind the app. Tests can use in-memory fakes; production sends guest reports to the API.
+/// The repositories behind the app. Tests can use in-memory fakes; production
+/// uses the API for reports, catalogs, authentication, and volunteer assignments.
 class AppDependencies {
   AppDependencies({
     FakeConnectivityRepository? connectivity,
     ReportsRepository? reports,
     CatalogRepository? catalogs,
+    AuthRepository? auth,
+    VolunteerRepository? volunteers,
   }) : connectivity = connectivity ?? FakeConnectivityRepository() {
     this.reports = reports ?? FakeReportsRepository(this.connectivity);
     this.catalogs = catalogs ?? FakeCatalogRepository();
-    volunteers = FakeVolunteerRepository(this.connectivity);
+    this.auth = auth ?? FakeAuthRepository();
+    this.volunteers = volunteers ?? FakeVolunteerRepository(this.connectivity);
   }
 
   factory AppDependencies.production() {
@@ -58,6 +66,7 @@ class AppDependencies {
         defaultValue: 'http://10.0.2.2:3000',
       ),
     );
+    final auth = ApiAuthRepository(apiBaseUrl: apiBaseUrl);
     return AppDependencies(
       connectivity: connectivity,
       reports: ApiReportsRepository(
@@ -70,13 +79,20 @@ class AppDependencies {
         apiBaseUrl: apiBaseUrl,
         connectivity: connectivity,
       ),
+      auth: auth,
+      volunteers: ApiVolunteerRepository(
+        apiBaseUrl: apiBaseUrl,
+        authRepository: auth,
+        connectivity: connectivity,
+      ),
     );
   }
 
   final FakeConnectivityRepository connectivity;
   late final ReportsRepository reports;
   late final CatalogRepository catalogs;
-  late final FakeVolunteerRepository volunteers;
+  late final AuthRepository auth;
+  late final VolunteerRepository volunteers;
 }
 
 class YasamHattiApp extends StatefulWidget {
@@ -137,11 +153,11 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
       case 'safe':
         await reports.sendSafe();
       case 'vol':
-        context.read<VolunteerViewModel>()
-          ..setRole(VolunteerRole.rescue)
-          ..register()
-          ..openNeed(NeedId.water)
-          ..accept();
+        final volunteer = context.read<VolunteerViewModel>();
+        volunteer.setRole(VolunteerRole.rescue);
+        await volunteer.register();
+        volunteer.openNeed(NeedId.water);
+        await volunteer.accept();
       case 'fall' || 'crash' || 'quake':
         context.read<CountdownViewModel>().start(
           CountdownCause.values.byName(seed),
@@ -167,6 +183,10 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
             GoRoute(path: '/status', builder: (_, _) => const StatusView()),
             GoRoute(path: '/map', builder: (_, _) => const MapView()),
             GoRoute(path: '/tools', builder: (_, _) => const ToolsView()),
+            GoRoute(
+              path: '/tools/guides',
+              builder: (_, _) => const GuidesView(),
+            ),
             GoRoute(path: '/donate', builder: (_, _) => const DonateView()),
             GoRoute(path: '/profile', builder: (_, _) => const ProfileView()),
             GoRoute(path: '/vol', builder: (_, _) => const VolunteerHubView()),
@@ -195,6 +215,7 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
     _deps.catalogs.dispose();
     _deps.connectivity.dispose();
     _deps.volunteers.dispose();
+    _deps.auth.dispose();
     super.dispose();
   }
 
@@ -208,6 +229,7 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
         ListenableProvider<ReportsRepository>.value(value: _deps.reports),
         ListenableProvider<CatalogRepository>.value(value: _deps.catalogs),
         ListenableProvider<VolunteerRepository>.value(value: _deps.volunteers),
+        Provider<AuthRepository>.value(value: _deps.auth),
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel(
             locale: Locale(widget.initialLanguage),
@@ -222,7 +244,9 @@ class _YasamHattiAppState extends State<YasamHattiApp> {
         ),
         ChangeNotifierProvider(create: (_) => ToolsViewModel()),
         ChangeNotifierProvider(create: (_) => OnboardingViewModel()),
-        ChangeNotifierProvider(create: (_) => LoginViewModel()),
+        ChangeNotifierProvider(
+          create: (c) => LoginViewModel(c.read<AuthRepository>()),
+        ),
         ChangeNotifierProvider(
           create: (c) => MapViewModel(c.read<CatalogRepository>()),
         ),

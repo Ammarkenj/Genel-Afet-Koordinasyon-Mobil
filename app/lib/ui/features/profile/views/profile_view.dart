@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../data/repositories/auth_repository.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
@@ -179,10 +180,22 @@ class ProfileView extends StatelessWidget {
         AppButton(
           label: l.profileLogout,
           variant: AppButtonVariant.outline,
-          onPressed: () {
+          onPressed: () async {
+            var message = l.toastLoggedOut;
+            try {
+              await context.read<AuthRepository>().logout();
+            } on AuthApiException catch (error) {
+              if (!context.mounted) return;
+              if (error.code == 'SESSION_STORAGE_FAILED') {
+                showToast(context, l.profileLogoutStorageError);
+                return;
+              }
+              message = l.profileLogoutServerWarning;
+            }
+            if (!context.mounted) return;
             context.read<LoginViewModel>().reset();
+            showToast(context, message);
             context.go('/login');
-            showToast(context, l.toastLoggedOut);
           },
         ),
       ],

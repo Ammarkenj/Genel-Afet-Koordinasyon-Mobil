@@ -269,7 +269,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginCodeHint.
   ///
   /// In tr, this message translates to:
-  /// **'SMS ile gönderildi. Prototipte herhangi 6 hane kabul edilir.'**
+  /// **'SMS ile gönderilen 6 haneli kodu girin.'**
   String get loginCodeHint;
 
   /// No description provided for @loginCodeError.
@@ -277,6 +277,36 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kod 6 haneli olmalı.'**
   String get loginCodeError;
+
+  /// No description provided for @loginCodeInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kod geçersiz veya süresi dolmuş.'**
+  String get loginCodeInvalid;
+
+  /// No description provided for @loginUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'SMS doğrulama şu an kullanılamıyor. Lütfen daha sonra deneyin.'**
+  String get loginUnavailable;
+
+  /// No description provided for @loginRateLimited.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çok fazla deneme. Bir süre sonra tekrar deneyin.'**
+  String get loginRateLimited;
+
+  /// No description provided for @loginConnectionError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sunucuya bağlanılamadı. Bağlantınızı kontrol edip tekrar deneyin.'**
+  String get loginConnectionError;
+
+  /// No description provided for @loginServerError.
+  ///
+  /// In tr, this message translates to:
+  /// **'İşlem tamamlanamadı. Lütfen tekrar deneyin.'**
+  String get loginServerError;
 
   /// No description provided for @loginSubmit.
   ///
@@ -998,6 +1028,84 @@ abstract class AppLocalizations {
   /// **'Durdur'**
   String get toolsStop;
 
+  /// No description provided for @guidesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Acil durum rehberleri'**
+  String get guidesTitle;
+
+  /// No description provided for @guidesEntryTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Acil durum rehberleri'**
+  String get guidesEntryTitle;
+
+  /// No description provided for @guidesEntrySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Afet öncesi ve sırasında yapılacaklar'**
+  String get guidesEntrySubtitle;
+
+  /// No description provided for @guidesOfflineNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydedilmiş rehberler internet bağlantısı olmadan da açılabilir.'**
+  String get guidesOfflineNote;
+
+  /// No description provided for @guidesRefresh.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehberleri yenile'**
+  String get guidesRefresh;
+
+  /// No description provided for @guidesList.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehber listesi'**
+  String get guidesList;
+
+  /// No description provided for @guidesOffline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çevrimdışı'**
+  String get guidesOffline;
+
+  /// No description provided for @guidesOnline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çevrimiçi'**
+  String get guidesOnline;
+
+  /// No description provided for @guidesSyncing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehberler güncelleniyor'**
+  String get guidesSyncing;
+
+  /// No description provided for @guidesStale.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehber kataloğu güncellenemedi'**
+  String get guidesStale;
+
+  /// No description provided for @guidesLoading.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehberler yükleniyor…'**
+  String get guidesLoading;
+
+  /// No description provided for @guidesEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz acil durum rehberi yok.'**
+  String get guidesEmpty;
+
+  /// No description provided for @guidesLoadFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehberler güncellenemedi. Bağlantınızı kontrol edip tekrar deneyin.'**
+  String get guidesLoadFailed;
+
   /// No description provided for @toolsSmsTitle.
   ///
   /// In tr, this message translates to:
@@ -1334,6 +1442,18 @@ abstract class AppLocalizations {
   /// **'Çıkış yap'**
   String get profileLogout;
 
+  /// No description provided for @profileLogoutServerWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu cihazdaki oturum kapatıldı; sunucu oturumu kapatılamadı.'**
+  String get profileLogoutServerWarning;
+
+  /// No description provided for @profileLogoutStorageError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oturum bu cihazdan temizlenemedi. Lütfen tekrar deneyin.'**
+  String get profileLogoutStorageError;
+
   /// No description provided for @volSection.
   ///
   /// In tr, this message translates to:
@@ -1496,6 +1616,84 @@ abstract class AppLocalizations {
   /// **'Müsait değilsiniz. İhtiyaç listesini görmek için \"Müsaitim\"i açın.'**
   String get volUnavailable;
 
+  /// No description provided for @volLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönüllü işlemleri için giriş yapmanız gerekiyor.'**
+  String get volLoginRequired;
+
+  /// No description provided for @volLoginAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Giriş yap'**
+  String get volLoginAction;
+
+  /// No description provided for @volRegistrationMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönüllü panelini kullanmak için önce gönüllü kaydınızı tamamlayın.'**
+  String get volRegistrationMissing;
+
+  /// No description provided for @volConnectionError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip yeniden deneyin.'**
+  String get volConnectionError;
+
+  /// No description provided for @volServerError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönüllü işlemi tamamlanamadı. Lütfen yeniden deneyin.'**
+  String get volServerError;
+
+  /// No description provided for @volNeedUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu ihtiyaç artık açık değil. Listeyi yenileyip başka bir ihtiyaç seçin.'**
+  String get volNeedUnavailable;
+
+  /// No description provided for @volErrorTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İşlem tamamlanamadı'**
+  String get volErrorTitle;
+
+  /// No description provided for @volRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeniden dene'**
+  String get volRetry;
+
+  /// No description provided for @volLoading.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönüllü bilgileriniz yükleniyor…'**
+  String get volLoading;
+
+  /// No description provided for @volNeedsEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şu anda açık bir ihtiyaç kaydı yok.'**
+  String get volNeedsEmpty;
+
+  /// No description provided for @volDistanceUnknown.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uzaklık bilgisi yok'**
+  String get volDistanceUnknown;
+
+  /// No description provided for @volDistanceMeters.
+  ///
+  /// In tr, this message translates to:
+  /// **'{distance} m'**
+  String volDistanceMeters(int distance);
+
+  /// No description provided for @volDistanceKilometers.
+  ///
+  /// In tr, this message translates to:
+  /// **'{distance} km'**
+  String volDistanceKilometers(String distance);
+
   /// No description provided for @volActiveTask.
   ///
   /// In tr, this message translates to:
@@ -1505,8 +1703,14 @@ abstract class AppLocalizations {
   /// No description provided for @volOfflineDesc.
   ///
   /// In tr, this message translates to:
-  /// **'Son eşleşen ihtiyaçlar gösteriliyor. Kabul ettiğiniz görev cihazda saklanır, bağlantı gelince gönderilir.'**
+  /// **'Daha önce yüklenen bilgiler ekranda kalabilir. Güncel ihtiyaçlar ve gönüllü işlemleri için internet gerekir; işlemler çevrimdışı kuyruğa alınmaz.'**
   String get volOfflineDesc;
+
+  /// No description provided for @volOfflineDemoDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örnek görevler cihazda bekler ve bağlantı gelince güncellenir; örnek kayıtlar gerçek sunucu verisi değildir.'**
+  String get volOfflineDemoDesc;
 
   /// No description provided for @volTaskWaiting.
   ///
@@ -1591,6 +1795,18 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'1,2 km'**
   String get needShelterDist;
+
+  /// No description provided for @needOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer ihtiyaç'**
+  String get needOther;
+
+  /// No description provided for @needOtherDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'İhtiyaç açıklaması'**
+  String get needOtherDesc;
 
   /// No description provided for @volNeedTitle.
   ///

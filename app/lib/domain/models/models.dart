@@ -21,7 +21,7 @@ enum ReportDeliveryFailure { location, connection, server }
 enum VolunteerRole { aid, rescue, logistics }
 
 /// Needs shown to volunteers. Mirrors the Needs table of the ER diagram (need_type, description, urgency_level).
-enum NeedId { aid, water, shelter }
+enum NeedId { aid, water, shelter, other }
 
 class Report {
   Report({
@@ -160,13 +160,18 @@ class VolunteerNeed {
     required this.id,
     required this.urgency,
     required this.meters,
+    this.recordId,
+    this.description,
+    this.eventTitle,
   });
 
   final NeedId id;
-
+  final String? recordId;
   /// 1 = normal, 2 = urgent, 3 = very urgent. Always shown with words and dots, never colour alone.
   final int urgency;
-  final int meters;
+  final int? meters;
+  final String? description;
+  final String? eventTitle;
 }
 
 class VolunteerTask {
@@ -175,9 +180,15 @@ class VolunteerTask {
     required this.time,
     required this.state,
     this.done = false,
+    this.recordId,
+    this.assignmentId,
+    this.eventTitle,
   });
 
   final NeedId need;
+  final String? recordId;
+  final String? assignmentId;
+  final String? eventTitle;
   final String time;
   DeliveryState state;
   bool done;

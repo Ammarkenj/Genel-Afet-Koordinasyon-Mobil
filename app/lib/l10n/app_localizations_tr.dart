@@ -104,11 +104,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get loginCode => '6 haneli doğrulama kodu';
 
   @override
-  String get loginCodeHint =>
-      'SMS ile gönderildi. Prototipte herhangi 6 hane kabul edilir.';
+  String get loginCodeHint => 'SMS ile gönderilen 6 haneli kodu girin.';
 
   @override
   String get loginCodeError => 'Kod 6 haneli olmalı.';
+
+  @override
+  String get loginCodeInvalid => 'Kod geçersiz veya süresi dolmuş.';
+
+  @override
+  String get loginUnavailable =>
+      'SMS doğrulama şu an kullanılamıyor. Lütfen daha sonra deneyin.';
+
+  @override
+  String get loginRateLimited =>
+      'Çok fazla deneme. Bir süre sonra tekrar deneyin.';
+
+  @override
+  String get loginConnectionError =>
+      'Sunucuya bağlanılamadı. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get loginServerError => 'İşlem tamamlanamadı. Lütfen tekrar deneyin.';
 
   @override
   String get loginSubmit => 'Giriş yap';
@@ -493,6 +510,47 @@ class AppLocalizationsTr extends AppLocalizations {
   String get toolsStop => 'Durdur';
 
   @override
+  String get guidesTitle => 'Acil durum rehberleri';
+
+  @override
+  String get guidesEntryTitle => 'Acil durum rehberleri';
+
+  @override
+  String get guidesEntrySubtitle => 'Afet öncesi ve sırasında yapılacaklar';
+
+  @override
+  String get guidesOfflineNote =>
+      'Kaydedilmiş rehberler internet bağlantısı olmadan da açılabilir.';
+
+  @override
+  String get guidesRefresh => 'Rehberleri yenile';
+
+  @override
+  String get guidesList => 'Rehber listesi';
+
+  @override
+  String get guidesOffline => 'Çevrimdışı';
+
+  @override
+  String get guidesOnline => 'Çevrimiçi';
+
+  @override
+  String get guidesSyncing => 'Rehberler güncelleniyor';
+
+  @override
+  String get guidesStale => 'Rehber kataloğu güncellenemedi';
+
+  @override
+  String get guidesLoading => 'Rehberler yükleniyor…';
+
+  @override
+  String get guidesEmpty => 'Henüz acil durum rehberi yok.';
+
+  @override
+  String get guidesLoadFailed =>
+      'Rehberler güncellenemedi. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
   String get toolsSmsTitle => 'SMS ile bildirim';
 
   @override
@@ -670,6 +728,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get profileLogout => 'Çıkış yap';
 
   @override
+  String get profileLogoutServerWarning =>
+      'Bu cihazdaki oturum kapatıldı; sunucu oturumu kapatılamadı.';
+
+  @override
+  String get profileLogoutStorageError =>
+      'Oturum bu cihazdan temizlenemedi. Lütfen tekrar deneyin.';
+
+  @override
   String get volSection => 'Gönüllülük';
 
   @override
@@ -754,11 +820,63 @@ class AppLocalizationsTr extends AppLocalizations {
       'Müsait değilsiniz. İhtiyaç listesini görmek için \"Müsaitim\"i açın.';
 
   @override
+  String get volLoginRequired =>
+      'Gönüllü işlemleri için giriş yapmanız gerekiyor.';
+
+  @override
+  String get volLoginAction => 'Giriş yap';
+
+  @override
+  String get volRegistrationMissing =>
+      'Gönüllü panelini kullanmak için önce gönüllü kaydınızı tamamlayın.';
+
+  @override
+  String get volConnectionError =>
+      'Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip yeniden deneyin.';
+
+  @override
+  String get volServerError =>
+      'Gönüllü işlemi tamamlanamadı. Lütfen yeniden deneyin.';
+
+  @override
+  String get volNeedUnavailable =>
+      'Bu ihtiyaç artık açık değil. Listeyi yenileyip başka bir ihtiyaç seçin.';
+
+  @override
+  String get volErrorTitle => 'İşlem tamamlanamadı';
+
+  @override
+  String get volRetry => 'Yeniden dene';
+
+  @override
+  String get volLoading => 'Gönüllü bilgileriniz yükleniyor…';
+
+  @override
+  String get volNeedsEmpty => 'Şu anda açık bir ihtiyaç kaydı yok.';
+
+  @override
+  String get volDistanceUnknown => 'Uzaklık bilgisi yok';
+
+  @override
+  String volDistanceMeters(int distance) {
+    return '$distance m';
+  }
+
+  @override
+  String volDistanceKilometers(String distance) {
+    return '$distance km';
+  }
+
+  @override
   String get volActiveTask => 'Aktif görev';
 
   @override
   String get volOfflineDesc =>
-      'Son eşleşen ihtiyaçlar gösteriliyor. Kabul ettiğiniz görev cihazda saklanır, bağlantı gelince gönderilir.';
+      'Daha önce yüklenen bilgiler ekranda kalabilir. Güncel ihtiyaçlar ve gönüllü işlemleri için internet gerekir; işlemler çevrimdışı kuyruğa alınmaz.';
+
+  @override
+  String get volOfflineDemoDesc =>
+      'Örnek görevler cihazda bekler ve bağlantı gelince güncellenir; örnek kayıtlar gerçek sunucu verisi değildir.';
 
   @override
   String get volTaskWaiting => 'Bekleyen görev kabulü: 1';
@@ -803,6 +921,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get needShelterDist => '1,2 km';
+
+  @override
+  String get needOther => 'Diğer ihtiyaç';
+
+  @override
+  String get needOtherDesc => 'İhtiyaç açıklaması';
 
   @override
   String get volNeedTitle => 'İhtiyaç detayı';

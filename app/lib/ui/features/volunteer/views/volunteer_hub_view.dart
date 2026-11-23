@@ -12,11 +12,25 @@ import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/layout.dart';
 import '../../../core/widgets/parts.dart';
 import '../view_models/volunteer_view_model.dart';
+import 'volunteer_error_notice.dart';
 
 /// Volunteer hub: availability switch, role summary, the active task and nearby needs.
-/// Offline it shows the last matched needs and the accepted task waits as "Bekliyor".
-class VolunteerHubView extends StatelessWidget {
+/// Real needs and assignments are loaded from the authenticated backend.
+class VolunteerHubView extends StatefulWidget {
   const VolunteerHubView({super.key});
+
+  @override
+  State<VolunteerHubView> createState() => _VolunteerHubViewState();
+}
+
+class _VolunteerHubViewState extends State<VolunteerHubView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<VolunteerViewModel>().load();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +49,7 @@ class VolunteerHubView extends StatelessWidget {
             icon: networkIcon(net),
             title: l.network(net),
             body: net == NetworkStatus.offline
-                ? l.volOfflineDesc
+                ? (vm.isDemo ? l.volOfflineDemoDesc : l.volOfflineDesc)
                 : l.netWeakDesc,
             extra: task != null && task.state == DeliveryState.queued
                 ? Row(
@@ -60,59 +74,84 @@ class VolunteerHubView extends StatelessWidget {
                   )
                 : null,
           ),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: Sp.s2,
+        if (vm.loading)
+          Row(
             children: [
-              SectionTitle(l.volStatus),
-              SwitchRow(
-                title: l.volAvailable,
-                description: vm.available
-                    ? l.volAvailableOn
-                    : l.volAvailableOff,
-                value: vm.available,
-                stateLabel: vm.available ? l.commonOn : l.commonOff,
-                onChanged: vm.setAvailable,
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              KvCard(
-                card: false,
-                rows: [
-                  (l.volRole, KvText(l.roleName(vm.role))),
-                  (
-                    l.volCertLabel,
-                    vm.hasCertificate
-                        ? AppChip(
-                            tone: Tone.ok,
-                            icon: AppIconName.checkCircle,
-                            label: l.volCertYes,
-                          )
-                        : AppChip(
-                            tone: Tone.info,
-                            icon: AppIconName.info,
-                            label: l.volCertNo,
-                          ),
-                  ),
-                  (
-                    l.volLocShare,
-                    vm.available
-                        ? AppChip(
-                            tone: Tone.info,
-                            icon: AppIconName.pin,
-                            label: l.commonOn,
-                          )
-                        : AppChip(
-                            tone: Tone.warn,
-                            icon: AppIconName.pin,
-                            label: l.commonOff,
-                          ),
-                  ),
-                ],
-              ),
+              const SizedBox(width: Sp.s2),
+              Expanded(child: Text(l.volLoading)),
             ],
           ),
-        ),
-        if (task != null)
+        if (vm.errorCode != null)
+          VolunteerErrorNotice(
+            code: vm.errorCode!,
+            onRetry: vm.load,
+            onRegister: () => context.push('/vol/join'),
+          ),
+        if (!vm.loading && vm.hasLoaded && !vm.joined && vm.errorCode == null)
+          VolunteerErrorNotice(
+            code: 'VOLUNTEER_NOT_REGISTERED',
+            onRegister: () => context.push('/vol/join'),
+          ),
+        if (vm.joined)
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: Sp.s2,
+              children: [
+                SectionTitle(l.volStatus),
+                SwitchRow(
+                  title: l.volAvailable,
+                  description: vm.available
+                      ? l.volAvailableOn
+                      : l.volAvailableOff,
+                  value: vm.available,
+                  stateLabel: vm.available ? l.commonOn : l.commonOff,
+                  enabled: !vm.busy,
+                  onChanged: (value) => vm.setAvailable(value),
+                ),
+                KvCard(
+                  card: false,
+                  rows: [
+                    (l.volRole, KvText(l.roleName(vm.role))),
+                    (
+                      l.volCertLabel,
+                      vm.hasCertificate
+                          ? AppChip(
+                              tone: Tone.ok,
+                              icon: AppIconName.checkCircle,
+                              label: l.volCertYes,
+                            )
+                          : AppChip(
+                              tone: Tone.info,
+                              icon: AppIconName.info,
+                              label: l.volCertNo,
+                            ),
+                    ),
+                    (
+                      l.volLocShare,
+                      vm.available
+                          ? AppChip(
+                              tone: Tone.info,
+                              icon: AppIconName.pin,
+                              label: l.commonOn,
+                            )
+                          : AppChip(
+                              tone: Tone.warn,
+                              icon: AppIconName.pin,
+                              label: l.commonOff,
+                            ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        if (vm.joined && task != null)
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: Sp.s2,
@@ -125,21 +164,27 @@ class VolunteerHubView extends StatelessWidget {
                   color: c.infoText,
                 ),
                 title: l.needName(task.need),
-                subtitle: '${l.volAssigned} · ${task.time}',
+                subtitle:
+                    '${task.eventTitle ?? l.volEventName} · ${l.volAssigned} · ${task.time}',
                 extra: _TaskChip(task: task),
                 chevron: true,
                 onTap: () => context.push('/vol/task'),
               ),
             ],
           ),
-        if (!vm.available)
+        if (vm.joined && !vm.available)
           NoteLine(icon: AppIconName.info, text: l.volUnavailable)
-        else
+        else if (vm.joined && vm.available)
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: Sp.s2,
             children: [
-              SectionTitle(l.volNeeds, trailing: AppTag(l.commonSample)),
+              SectionTitle(
+                l.volNeeds,
+                trailing: vm.isDemo ? AppTag(l.commonSample) : null,
+              ),
+              if (vm.needs.isEmpty)
+                NoteLine(icon: AppIconName.info, text: l.volNeedsEmpty),
               for (final n in vm.needs)
                 ListRowButton(
                   leading: AppIcon(
@@ -148,7 +193,7 @@ class VolunteerHubView extends StatelessWidget {
                     color: c.infoText,
                   ),
                   title: l.needName(n.id),
-                  subtitle: l.needDist(n.id),
+                  subtitle: l.needDistance(n),
                   extra: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     spacing: 4,
@@ -157,13 +202,15 @@ class VolunteerHubView extends StatelessWidget {
                         level: n.urgency,
                         text: '${l.volUrgency}: ${l.urgency(n.urgency)}',
                       ),
-                      if (task != null && task.need == n.id)
+                      if (task != null &&
+                          (task.recordId == n.recordId ||
+                              (task.recordId == null && task.need == n.id)))
                         _TaskChip(task: task),
                     ],
                   ),
                   chevron: true,
                   onTap: () {
-                    vm.openNeed(n.id);
+                    vm.openNeed(n.id, recordId: n.recordId);
                     context.push('/vol/need');
                   },
                 ),

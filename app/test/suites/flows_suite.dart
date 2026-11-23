@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:yasamhatti/app.dart';
+import 'package:yasamhatti/data/repositories/api_auth_repository.dart';
+import 'package:yasamhatti/data/repositories/auth_repository.dart';
 import 'package:yasamhatti/domain/models/models.dart';
 import 'package:yasamhatti/l10n/app_localizations_tr.dart';
 import 'package:yasamhatti/ui/features/donate/view_models/donate_view_model.dart';
@@ -48,7 +53,10 @@ void flowsSuite() {
         await app.tapText(tr.typeFire);
         expect(find.text(tr.statusQueuedTitle), findsOneWidget);
         expect(find.text(tr.statusQueuedDesc), findsOneWidget);
-        expect(app.deps.reports.reports.single.state, ReportDeliveryState.queued);
+        expect(
+          app.deps.reports.reports.single.state,
+          ReportDeliveryState.queued,
+        );
 
         app.deps.connectivity.setStatus(NetworkStatus.online);
         await tester.pumpAndSettle();
@@ -227,6 +235,47 @@ void flowsSuite() {
     );
 
     testApp(
+      'SMS provider outage is shown and does not advance to code verification',
+      (tester) async {
+        final auth = ApiAuthRepository(
+          apiBaseUrl: Uri.parse('http://127.0.0.1:3000'),
+          client: MockClient(
+            (_) async => http.Response(
+              '{"error":{"code":"OTP_DELIVERY_UNAVAILABLE"}}',
+              503,
+            ),
+          ),
+        );
+        final app = await pumpApp(
+          tester,
+          location: '/login',
+          dependencies: AppDependencies(auth: auth),
+        );
+        await app.type('532 111 22 33');
+        await app.tapText(tr.loginSendCode);
+
+        expect(find.text(tr.loginUnavailable), findsOneWidget);
+        expect(app.read<LoginViewModel>().step, 1);
+      },
+    );
+
+    testApp('logging out clears the stored session and returns to login', (
+      tester,
+    ) async {
+      final auth = FakeAuthRepository(accessToken: 'test-session-token');
+      final app = await pumpApp(
+        tester,
+        location: '/profile',
+        dependencies: AppDependencies(auth: auth),
+      );
+
+      await app.tapText(tr.profileLogout);
+
+      expect(find.text(tr.loginTitle), findsOneWidget);
+      expect(await auth.readAccessToken(), isNull);
+    });
+
+    testApp(
       'emergency features do not need a login ("continue without signing up")',
       (tester) async {
         final app = await pumpApp(tester, location: '/login');
@@ -315,10 +364,10 @@ void flowsSuite() {
       tester,
     ) async {
       final app = await pumpApp(tester, location: '/vol');
-      app.read<VolunteerViewModel>()
-        ..register()
-        ..openNeed(NeedId.shelter)
-        ..accept();
+      final volunteer = app.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.shelter);
+      await volunteer.accept();
       await app.go('/vol/task');
       await app.tapText(tr.volComplete);
       expect(find.text(tr.volDoneConfirmTitle), findsOneWidget);
@@ -329,10 +378,10 @@ void flowsSuite() {
 
     testApp('confirming the completion of a task completes it', (tester) async {
       final app = await pumpApp(tester, location: '/vol');
-      app.read<VolunteerViewModel>()
-        ..register()
-        ..openNeed(NeedId.shelter)
-        ..accept();
+      final volunteer = app.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.shelter);
+      await volunteer.accept();
       await app.go('/vol/task');
       await app.tapText(tr.volComplete);
       await app.tapText(tr.volDoneYes);
@@ -344,7 +393,7 @@ void flowsSuite() {
       'offline: accepting is saved as waiting and sent when the network returns',
       (tester) async {
         final app = await pumpApp(tester, location: '/vol');
-        app.read<VolunteerViewModel>().register();
+        await app.read<VolunteerViewModel>().register();
         app.deps.connectivity.setStatus(NetworkStatus.offline);
         await tester.pumpAndSettle();
         await app.tapText(tr.needWater);
@@ -361,8 +410,8 @@ void flowsSuite() {
       'while another task is active, accepting is disabled and the reason is written',
       (tester) async {
         final app = await pumpApp(tester, location: '/vol');
-        app.read<VolunteerViewModel>().register();
-        app.deps.volunteers.accept(NeedId.water);
+        await app.read<VolunteerViewModel>().register();
+        await app.deps.volunteers.accept(NeedId.water);
         app.read<VolunteerViewModel>().openNeed(NeedId.aid);
         await app.go('/vol/need');
         expect(find.text(tr.volBusy), findsOneWidget);
@@ -377,8 +426,9 @@ void flowsSuite() {
       tester,
     ) async {
       final app = await pumpApp(tester, location: '/vol');
-      app.read<VolunteerViewModel>().register();
-      app.read<VolunteerViewModel>().setAvailable(false);
+      final volunteer = app.read<VolunteerViewModel>();
+      await volunteer.register();
+      await volunteer.setAvailable(false);
       await tester.pumpAndSettle();
       expect(find.text(tr.volUnavailable), findsOneWidget);
       expect(find.text(tr.needWater), findsNothing);

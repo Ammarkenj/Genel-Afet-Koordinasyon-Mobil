@@ -37,16 +37,14 @@ void layoutSuite({String? onlyScenario}) {
     'login phone': (a) => a.go('/login'),
     'login phone error': (a) async {
       await a.go('/login');
-      a.read<LoginViewModel>()
-        ..setPhone('1')
-        ..sendCode();
+      final login = a.read<LoginViewModel>()..setPhone('1');
+      await login.sendCode();
       await a.settle();
     },
     'login code': (a) async {
       await a.go('/login');
-      a.read<LoginViewModel>()
-        ..setPhone('5321112233')
-        ..sendCode();
+      final login = a.read<LoginViewModel>()..setPhone('5321112233');
+      await login.sendCode();
       await a.settle();
     },
     'home': (a) async {},
@@ -106,6 +104,7 @@ void layoutSuite({String? onlyScenario}) {
         ..toggleFlash();
       await a.settle();
     },
+    'emergency guides': (a) => a.go('/tools/guides'),
     'donate': (a) => a.go('/donate'),
     'donate error': (a) async {
       await a.go('/donate');
@@ -127,24 +126,24 @@ void layoutSuite({String? onlyScenario}) {
     'profile': (a) => a.go('/profile'),
     'volunteer join': (a) => a.go('/vol/join'),
     'volunteer hub': (a) async {
-      a.read<VolunteerViewModel>()
-        ..setRole(VolunteerRole.rescue)
-        ..toggleCertificate()
-        ..register();
+      final volunteer = a.read<VolunteerViewModel>();
+      volunteer.setRole(VolunteerRole.rescue);
+      volunteer.toggleCertificate();
+      await volunteer.register();
       await a.go('/vol');
     },
     'volunteer hub offline with waiting task': (a) async {
       a.deps.connectivity.setStatus(NetworkStatus.offline);
-      a.read<VolunteerViewModel>()
-        ..register()
-        ..openNeed(NeedId.water)
-        ..accept();
+      final volunteer = a.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.water);
+      await volunteer.accept();
       await a.go('/vol');
     },
     'volunteer hub unavailable': (a) async {
-      a.read<VolunteerViewModel>()
-        ..register()
-        ..setAvailable(false);
+      final volunteer = a.read<VolunteerViewModel>();
+      await volunteer.register();
+      await volunteer.setAvailable(false);
       await a.go('/vol');
     },
     'volunteer need': (a) async {
@@ -152,30 +151,34 @@ void layoutSuite({String? onlyScenario}) {
       await a.go('/vol/need');
     },
     'volunteer need busy': (a) async {
-      a.read<VolunteerViewModel>()
-        ..openNeed(NeedId.water)
-        ..accept()
-        ..openNeed(NeedId.aid);
+      final volunteer = a.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.water);
+      await volunteer.accept();
+      volunteer.openNeed(NeedId.aid);
       await a.go('/vol/need');
     },
     'volunteer task': (a) async {
-      a.read<VolunteerViewModel>()
-        ..openNeed(NeedId.shelter)
-        ..accept();
+      final volunteer = a.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.shelter);
+      await volunteer.accept();
       await a.go('/vol/task');
     },
     'volunteer task done dialog': (a) async {
-      a.read<VolunteerViewModel>()
-        ..openNeed(NeedId.shelter)
-        ..accept();
+      final volunteer = a.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.shelter);
+      await volunteer.accept();
       await a.go('/vol/task');
       await a.tapText(a.l.volComplete);
     },
     'volunteer task done': (a) async {
-      a.read<VolunteerViewModel>()
-        ..openNeed(NeedId.shelter)
-        ..accept()
-        ..complete();
+      final volunteer = a.read<VolunteerViewModel>();
+      await volunteer.register();
+      volunteer.openNeed(NeedId.shelter);
+      await volunteer.accept();
+      await volunteer.complete();
       await a.go('/vol/task');
     },
   };
