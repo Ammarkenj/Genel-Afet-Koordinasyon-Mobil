@@ -1,6 +1,8 @@
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
 const { createApp } = require("../src/app");
+const { InMemoryReportRepository } = require("../src/repositories/inMemoryReportRepository");
+const { PrismaReportRepository } = require("../src/repositories/prismaReportRepository");
 
 async function startTestServer(t, options) {
   const server = createApp(options).listen(0, "127.0.0.1");
@@ -207,6 +209,197 @@ test("staff report endpoints require a valid bearer token and allow listing and 
 
   assert.equal(updateResponse.status, 200);
   assert.equal(updatedReport.data.status, "reviewing");
+});
+
+test("staff can create and fulfill needs linked to help reports", async (t) => {
+  const staffApiToken = "test-staff-token";
+  const reportRepository = new InMemoryReportRepository();
+  const baseUrl = await startTestServer(t, { reportRepository, staffApiToken });
+  const createReportResponse = await fetch(`${baseUrl}/api/v1/reports`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(
+      reportPayload({ clientReportId: "need-linked-report" }),
+    ),
+  });
+  const report = (await createReportResponse.json()).data;
+  const staffHeaders = {
+    authorization: `Bearer ${staffApiToken}`,
+    "content-type": "application/json",
+  };
+  const needsPath = `${baseUrl}/api/v1/reports/${report.id}/needs`;
+
+  const unauthorized = await fetch(needsPath);
+  assert.equal(unauthorized.status, 401);
+
+  const unauthorizedCreate = await fetch(needsPath, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ type: "water", urgency: 2 }),
+  });
+  assert.equal(unauthorizedCreate.status, 401);
+
+  const missingReportNeeds = await fetch(
+    `${baseUrl}/api/v1/reports/missing-report/needs`,
+    { headers: { authorization: `Bearer ${staffApiToken}` } },
+  );
+  assert.equal(missingReportNeeds.status, 404);
+
+  const initialNeeds = await fetch(needsPath, {
+    headers: { authorization: `Bearer ${staffApiToken}` },
+  });
+  assert.deepEqual(await initialNeeds.json(), { data: [] });
+
+  const invalidNeed = await fetch(needsPath, {
+    method: "POST",
+    headers: staffHeaders,
+    body: JSON.stringify({ type: "unknown", urgency: 2 }),
+  });
+  assert.equal(invalidNeed.status, 400);
+
+  const createNeed = await fetch(needsPath, {
+    method: "POST",
+    headers: staffHeaders,
+    body: JSON.stringify({
+      type: "water",
+      description: "Deliver drinking water.",
+      urgency: 2,
+    }),
+  });
+  const need = (await createNeed.json()).data;
+  assert.equal(createNeed.status, 201);
+  assert.equal(need.reportId, report.id);
+  assert.equal(need.type, "water");
+  assert.equal(need.urgency, 2);
+  assert.equal(need.fulfilled, false);
+
+  const unauthorizedFulfillment = await fetch(`${needsPath}/${need.id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ fulfilled: true }),
+  });
+  assert.equal(unauthorizedFulfillment.status, 401);
+
+  const invalidFulfillment = await fetch(`${needsPath}/${need.id}`, {
+    method: "PATCH",
+    headers: staffHeaders,
+    body: JSON.stringify({ fulfilled: false }),
+  });
+  assert.equal(invalidFulfillment.status, 400);
+
+  const fulfilledResponse = await fetch(`${needsPath}/${need.id}`, {
+    method: "PATCH",
+    headers: staffHeaders,
+    body: JSON.stringify({ fulfilled: true }),
+  });
+  assert.equal(fulfilledResponse.status, 200);
+  assert.equal((await fulfilledResponse.json()).data.fulfilled, true);
+
+  const listedNeeds = await fetch(needsPath, {
+    headers: { authorization: `Bearer ${staffApiToken}` },
+  });
+  assert.equal((await listedNeeds.json()).data[0].fulfilled, true);
+});
+
+test("staff cannot create needs for safe or resolved reports", async (t) => {
+  const staffApiToken = "test-staff-token";
+  const reportRepository = new InMemoryReportRepository();
+  const baseUrl = await startTestServer(t, { reportRepository, staffApiToken });
+  const headers = {
+    authorization: `Bearer ${staffApiToken}`,
+    "content-type": "application/json",
+  };
+  const safeResponse = await fetch(`${baseUrl}/api/v1/reports`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(
+      reportPayload({
+        clientReportId: "safe-report",
+        kind: "safe",
+        type: null,
+      }),
+    ),
+  });
+  const safeReport = (await safeResponse.json()).data;
+
+  const safeNeedResponse = await fetch(
+    `${baseUrl}/api/v1/reports/${safeReport.id}/needs`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ type: "aid", urgency: 1 }),
+    },
+  );
+  assert.equal(safeNeedResponse.status, 409);
+
+  const helpResponse = await fetch(`${baseUrl}/api/v1/reports`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(
+      reportPayload({ clientReportId: "resolved-help-report" }),
+    ),
+  });
+  const helpReport = (await helpResponse.json()).data;
+  await fetch(`${baseUrl}/api/v1/reports/${helpReport.id}/status`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ status: "reviewing" }),
+  });
+  await fetch(`${baseUrl}/api/v1/reports/${helpReport.id}/status`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ status: "resolved" }),
+  });
+
+  const resolvedNeedResponse = await fetch(
+    `${baseUrl}/api/v1/reports/${helpReport.id}/needs`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ type: "aid", urgency: 1 }),
+    },
+  );
+  assert.equal(resolvedNeedResponse.status, 409);
+});
+
+test("Prisma refuses to fulfill a need with an active volunteer assignment", async () => {
+  let updateCalled = false;
+  const transaction = {
+    async $queryRaw() {
+      return [{ need_id: "need-1" }];
+    },
+    need: {
+      async findUnique() {
+        return {
+          need_id: "need-1",
+          report_id: "report-1",
+          need_type: "water",
+          description: null,
+          urgency_level: "urgent",
+          is_fulfilled: false,
+          report: { event: null },
+        };
+      },
+      async update() {
+        updateCalled = true;
+      },
+    },
+    volunteerAssignment: {
+      async findFirst() {
+        return { assignment_id: "assignment-1" };
+      },
+    },
+  };
+  const repository = new PrismaReportRepository({
+    async $transaction(callback) {
+      return callback(transaction);
+    },
+  });
+
+  const result = await repository.fulfillNeed("report-1", "need-1");
+
+  assert.deepEqual(result, { status: "active_assignment" });
+  assert.equal(updateCalled, false);
 });
 
 test("unknown routes return a structured 404 response", async (t) => {

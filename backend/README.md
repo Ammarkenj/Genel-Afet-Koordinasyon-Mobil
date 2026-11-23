@@ -77,6 +77,14 @@ geçişler `400` döndürür. Token'ı kaynak koduna veya Git'e eklemeyin. Bu pa
 MVP token'ını yalnızca TLS arkasında kullanın; personel bazlı hesap/rol sistemi
 henüz yoktur.
 
+Personel aynı bearer token ile ihtiyaç kayıtlarını yönetebilir:
+
+- `GET /api/v1/reports/:id/needs` bir ihbara bağlı ihtiyaçları listeler.
+- `POST /api/v1/reports/:id/needs` `{ "type": "water", "description": "Drinking water", "urgency": 2 }` gövdesiyle ihtiyaç oluşturur. `type`: `aid`, `water`, `shelter` veya `other`; `urgency`: 1–3. Yalnızca çözülmemiş yardım ihbarlarına ihtiyaç eklenebilir.
+- `PATCH /api/v1/reports/:id/needs/:needId` `{ "fulfilled": true }` gövdesiyle ihtiyacı kapatır. Aktif gönüllü ataması varsa `409 NEED_HAS_ACTIVE_ASSIGNMENT` döner. Kapatılan kayıtlar silinmez.
+
+İhtiyaçlar gerçek `Report` kayıtlarına bağlanır ve gönüllü panelinde yayımlanır. İhtiyaç oluşturma, listeleme ve kapatma uçlarının tümü `STAFF_API_TOKEN` ister.
+
 ### Telefonla kullanıcı doğrulama (altyapı)
 
 `POST /api/v1/auth/otp/request` Türk telefon numarasını doğrular ve SMS sağlayıcısı
@@ -112,8 +120,10 @@ PostgreSQL bağlantısını `backend/.env` içindeki `DATABASE_URL` değişkeniy
 npm run db:migrate
 ```
 
-Telefon doğrulama tablolarını ekleyen `20261123171000_phone_otp_sessions`
-migration'ı henüz veritabanına uygulanmadı.
+`20261123171000_phone_otp_sessions` telefon doğrulama tablolarını,
+`20261123182000_volunteer_task_persistence` ise gönüllü görev ilişkilerini
+ekler. Yeni bir veritabanı ortamını kullanmadan önce migration'ları
+`npm run db:migrate` ile uygulayın.
 
 Sabit acil durum rehberlerini ve barınak örneklerini eklemek için:
 
