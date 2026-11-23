@@ -41,6 +41,13 @@ function reportRoutes({
   router.post("/", limitReportSubmissions, controller.createReport);
   router.get("/", requireStaffAuth, controller.listReports);
   router.patch("/:id/status", requireStaffAuth, controller.updateReportStatus);
+  router.get("/:id/needs", requireStaffAuth, controller.listReportNeeds);
+  router.post("/:id/needs", requireStaffAuth, controller.createReportNeed);
+  router.patch(
+    "/:id/needs/:needId",
+    requireStaffAuth,
+    controller.fulfillReportNeed,
+  );
   router.patch(
     "/:id/details",
     limitReportDetails,

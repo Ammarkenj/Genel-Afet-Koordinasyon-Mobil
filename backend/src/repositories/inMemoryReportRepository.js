@@ -1,5 +1,6 @@
 const { randomUUID } = require("node:crypto");
 const { hashReportUpdateToken } = require("../security/reportUpdateToken");
+const { toApiNeed } = require("./needMapping");
 
 // #### TODO: Replace this temporary store with the PostgreSQL-backed repository.
 function copyReport(report) {
@@ -14,6 +15,7 @@ class InMemoryReportRepository {
   constructor() {
     this.reports = new Map();
     this.reportIdsByClientId = new Map();
+    this.needs = new Map();
   }
 
   create(input) {
@@ -48,6 +50,43 @@ class InMemoryReportRepository {
   findById(id) {
     const report = this.reports.get(id);
     return report ? copyReport(report) : null;
+  }
+
+  listNeeds(reportId) {
+    if (!this.reports.has(reportId)) return null;
+    return [...this.needs.values()]
+      .filter((need) => need.report_id === reportId)
+      .sort((left, right) => left.need_id.localeCompare(right.need_id))
+      .map(toApiNeed);
+  }
+
+  createNeed(reportId, input) {
+    const report = this.reports.get(reportId);
+    if (!report) return { status: "report_not_found" };
+    if (report.kind !== "help") return { status: "report_not_eligible" };
+    if (report.status === "resolved") return { status: "report_resolved" };
+
+    const need = {
+      need_id: randomUUID(),
+      report_id: reportId,
+      need_type: input.type,
+      description: input.description,
+      urgency_level: input.urgencyLevel,
+      is_fulfilled: false,
+      report: { event: null },
+    };
+    this.needs.set(need.need_id, need);
+    return { status: "created", need: toApiNeed(need) };
+  }
+
+  fulfillNeed(reportId, needId) {
+    const need = this.needs.get(needId);
+    if (!need || need.report_id !== reportId) {
+      return { status: "need_not_found" };
+    }
+
+    need.is_fulfilled = true;
+    return { status: "fulfilled", need: toApiNeed(need) };
   }
 
   list(filters) {

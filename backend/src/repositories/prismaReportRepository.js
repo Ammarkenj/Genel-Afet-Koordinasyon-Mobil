@@ -1,4 +1,13 @@
 const { hashReportUpdateToken } = require("../security/reportUpdateToken");
+const { toApiNeed } = require("./needMapping");
+
+const needInclude = {
+  report: {
+    select: {
+      event: { select: { title: true } },
+    },
+  },
+};
 
 function toApiReport(report) {
   return {
@@ -81,6 +90,83 @@ class PrismaReportRepository {
     });
 
     return report ? toApiReport(report) : null;
+  }
+
+  async listNeeds(reportId) {
+    const report = await this.prisma.report.findUnique({
+      where: { report_id: reportId },
+      select: { report_id: true },
+    });
+    if (!report) return null;
+
+    const needs = await this.prisma.need.findMany({
+      where: { report_id: reportId },
+      include: needInclude,
+      orderBy: { need_id: "asc" },
+    });
+    return needs.map(toApiNeed);
+  }
+
+  async createNeed(reportId, input) {
+    return this.prisma.$transaction(async (transaction) => {
+      const reports = await transaction.$queryRaw`
+        SELECT "report_id", "kind", "status_type"
+        FROM "Report"
+        WHERE "report_id" = ${reportId}
+        FOR UPDATE
+      `;
+      if (reports.length === 0) return { status: "report_not_found" };
+      if (reports[0].kind !== "help") {
+        return { status: "report_not_eligible" };
+      }
+      if (reports[0].status_type === "resolved") {
+        return { status: "report_resolved" };
+      }
+
+      const need = await transaction.need.create({
+        data: {
+          report_id: reportId,
+          need_type: input.type,
+          description: input.description,
+          urgency_level: input.urgencyLevel,
+        },
+        include: needInclude,
+      });
+      return { status: "created", need: toApiNeed(need) };
+    });
+  }
+
+  async fulfillNeed(reportId, needId) {
+    return this.prisma.$transaction(async (transaction) => {
+      const lockedNeeds = await transaction.$queryRaw`
+        SELECT "need_id" FROM "Need"
+        WHERE "need_id" = ${needId} AND "report_id" = ${reportId}
+        FOR UPDATE
+      `;
+      if (lockedNeeds.length === 0) return { status: "need_not_found" };
+
+      const need = await transaction.need.findUnique({
+        where: { need_id: needId },
+        include: needInclude,
+      });
+      if (need.is_fulfilled) {
+        return { status: "fulfilled", need: toApiNeed(need) };
+      }
+
+      const activeAssignment =
+        await transaction.volunteerAssignment.findFirst({
+          where: { need_id: needId, completed_at: null },
+          select: { assignment_id: true },
+        });
+      if (activeAssignment) return { status: "active_assignment" };
+
+      const fulfilledNeed = await transaction.need.update({
+        where: { need_id: needId },
+        data: { is_fulfilled: true },
+        include: needInclude,
+      });
+      return { status: "fulfilled", need: toApiNeed(fulfilledNeed) };
+    });
   }
 
   async list(filters) {
